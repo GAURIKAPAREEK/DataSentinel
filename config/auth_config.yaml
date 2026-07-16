@@ -1,0 +1,76 @@
+cookie:
+  expiry_days: 7
+  key: datasentinel_secret_key_change_this
+  name: datasentinel_auth
+credentials:
+  usernames:
+    '1212':
+      email: dhruvsaxena1213@gmail.com
+      name: dhruv
+      password: $2b$12$vcdBL9D3LrKnlKroZ3KzKeeZ.WR9FWlPaxbeEHRB41LQaMAqV/yD6
+      reset_expiry: '2026-07-07T15:43:21.579274+00:00'
+      reset_token: _K_oPIiPgd0QqbAz9AUb-35zydMfsb5UsSD1HEQzFKY
+    '12345':
+      email: dhruv@gmail.com
+      name: dhruv
+      password: $2b$12$4QRXu/sUxeeyedXcACesHeMNbtsJBbwTmTMGg5lXS2.je5TRncZj2
+    adasd:
+      email: 123@gmail.com
+      name: dhruv
+      password: $2b$12$u5zH7Rd5eEQN.pBGJcyNf.vkJXw78J9iKkC/87m7qIv2j8Kin18l6
+    admin:
+      email: admin@example.com
+      name: Admin User
+      password: $2b$12$05BC76OnEjl2LnxwUjfRT.6683opHfnjP6yMj4UoloS.6ycSojSZS
+    gauriii:
+      email: pareekgaurika15@gmail.com
+      name: gaurii
+      password: $2b$12$VYhBtWmwa/epAhodKBOx3OahWrUfb/AGKi3oS23B7rGpkBafAx0FC
+    gaurika__01:
+      email: gaurikapareek12@gmail.com
+      name: gaurika
+      password: $2b$12$0MDvBAynKD8yKYbmPMmDj.xdUeoWq92yRY1sS0W9XDkXohAwXOT7W
+    gaurikaa_12:
+      email: gaurikapareek12@gmail.com
+      name: Gaurika Pareek
+      password: $2b$12$PfyzA3nfz/NKZL0FyU6YT.aT8V1ij52lUXNBN/zUJUHnWQiEGBIc6
+    newuser987:
+      email: test@example.com
+      name: testuser
+      password: $2b$12$vgV4nyxHVtcy6h4xAEOELuCHZjkP/Dj.XuSsO0HIGO5jZy0YYqYJm
+    newuser999:
+      email: test@example.com
+      name: Test User
+      password: $2b$12$m9TKxk/2ApsyLRCJM4RkuO5jNZFXUm8BccD/ZZdodEVnDRiTCLYTa
+    testagent:
+      email: testagent@example.com
+      name: Test Agent
+      password: $2b$12$gCA7FF78diEAwmvYGlk9Le7DCSRf7gM8zaZCmnDEDdzDQuaHesTfS
+    testuser:
+      email: test@example.com
+      name: Test UserTest User
+      password: $2b$12$oTp2olZcOoJttMpgciYqmO4FI2zdBsZL1Pe/gdKCFrChRFOSq9MQW
+    testuser1:
+      email: test@gmail.com
+      name: Test User
+      password: $2b$12$JkfZ2MorsNR.k2UqKkOZ7uk.jlAQ7nt9QCxFY26VsLPNeuXY8SYLC
+    testuser2:
+      email: test@gmail.com
+      name: Test User
+      password: $2b$12$4ZYrmCd393hPcSi/EI5/GOZc/M0/RuHvGXwTW6V5lcDxIqnBNpSdm
+    testuser_new:
+      email: test@example.com
+      name: Test User
+      password: $2b$12$gUw5lj2lgpvJcavliah6ROBgRUMAcjEvST4zBjVxWyZAASEmiWGeG
+    testuser_robust:
+      email: test@gmail.com
+      name: Test User
+      password: $2b$12$KxEHY/8CNbCwPwJm6oD6Yeu05WKx7z6Qpy3SYPAHSKKkzrIoHC/Py
+    user123:
+      email: test@gmail.com
+      name: Test User
+      password: $2b$12$cgOHcobTj7MBjthPOtxN/O26yDC9xi165z36.OLlLak40g0FqkIay
+    user_random_9912:
+      email: test@example.com
+      name: Test User
+      password: $2b$12$gW2joBQF9eTRJtpVpVukleRWf3KNH0kJRTC/MGIdJVl0W3iyg0FKC

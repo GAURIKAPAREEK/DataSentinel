@@ -1,0 +1,90 @@
+pipeline:
+  name: "DataSentinel"
+  version: "1.0"
+
+ingestion:
+  supported_formats: ["csv", "json", "xlsx"]
+  raw_data_path: "data/raw/"
+
+profiling:
+  null_threshold_warning: 0.3
+  null_threshold_critical: 0.6
+
+quality:
+  min_quality_score: 70
+
+output:
+  cleaned_path: "data/cleaned/"
+  quarantine_path: "data/quarantine/"
+  parquet_path: "data/output/"
+
+logging:
+  log_file: "logs/pipeline_runs.log"
+  level: "INFO"
+
+validation_rules:
+  - name: "no_negative_price"
+    column: "initial_price"
+    condition: "less_than"
+    value: 0
+    severity: "CRITICAL"
+
+  - name: "no_negative_rating"
+    column: "rating"
+    condition: "less_than"
+    value: 0
+    severity: "CRITICAL"
+
+  - name: "rating_max_limit"
+    column: "rating"
+    condition: "greater_than"
+    value: 5
+    severity: "WARNING"
+
+  - name: "missing_product_id"
+    column: "product_id"
+    condition: "is_null"
+    value: null
+    severity: "CRITICAL"
+
+anomaly_detection:
+  z_score_threshold: 3
+  volume_change_threshold_pct: 50
+
+database:
+  path: "logs/datasentinel.db"
+
+cleaning:
+  mode: required_only
+  treat_empty_as_null: true
+  required_column_names:
+    - user_id
+    - email
+    - username
+    - price
+    - status
+    - sale_amount
+    - product_id
+    - initial_price
+    - rating
+    - transaction_date
+    - store_id
+    - title
+  required_suffixes:
+    - _id
+  optional_column_names:
+    - discount
+    - what_customers_said
+    - seller_name
+    - videos
+    - seller_information
+    - variations
+    - best_offer
+    - more_offers
+    - product_details
+    - product_specifications
+    - delivery_options
+    - images
+    - sizes
+    - breadcrumbs
+    - amount_of_stars

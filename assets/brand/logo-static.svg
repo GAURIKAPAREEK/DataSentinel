@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="edge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="45%" stop-color="#5B5CEB"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#38BDF8" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5B5CEB" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="50" cy="54" rx="30" ry="9" fill="rgba(91,92,235,0.35)"/>
+  <polygon points="50,6 88,27 88,69 50,90 12,69 12,27" fill="rgba(91,92,235,0.15)" stroke="url(#edge)" stroke-width="1.4" stroke-linejoin="round"/>
+  <polygon points="50,26 68,36 68,60 50,70 32,60 32,36" fill="url(#core)" stroke="#00E5FF" stroke-width="0.6" stroke-opacity="0.7"/>
+</svg>
