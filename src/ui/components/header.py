@@ -75,14 +75,12 @@ def render_header(
 
     with actions_c:
         st.markdown('<div class="ui-hdr-actions" aria-hidden="true"></div>', unsafe_allow_html=True)
-        # Required order: Theme | Profile | Logout — tight auto widths
-        theme_c, profile_c, logout_c = st.columns(
-            [0.55, 1.45, 1.0],
+        # Required order: Profile | Theme | Logout — profile first, then sun/moon
+        profile_c, theme_c, logout_c = st.columns(
+            [1.45, 0.55, 1.0],
             gap="small",
             vertical_alignment="center",
         )
-        with theme_c:
-            render_theme_toggle(theme_key)
         with profile_c:
             with st.popover(short_name, key="hdr_profile", use_container_width=False):
                 st.markdown(
@@ -110,6 +108,8 @@ def render_header(
                     from src.auth import logout_user
 
                     logout_user()
+        with theme_c:
+            render_theme_toggle(theme_key)
         with logout_c:
             if st.button("Logout", key="ui_logout_btn", type="secondary", help="Log out"):
                 from src.auth import logout_user
