@@ -1622,88 +1622,6 @@ def _auth() -> str:
 """
 
 
-def _mobile_fixes() -> str:
-    """Last-wins overrides: forces real stacking on phones/tablets without
-    touching desktop layout. Kept in its own section so it always loads
-    after every other rule in the cascade."""
-    return """
-/* ============ GLOBAL: kill any horizontal scroll/crop on phones ============ */
-html, body {
-    overflow-x: hidden !important;
-}
-[data-testid="stAppViewContainer"],
-[data-testid="stMain"],
-.block-container {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-}
-
-/* ============ AUTH (login/signup) screen — force real stacking ============ */
-@media (max-width: 900px) {
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) {
-        flex-direction: column !important;
-        flex-wrap: wrap !important;
-    }
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="column"],
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="stColumn"],
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child,
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:last-child {
-        width: 100% !important;
-        max-width: 100% !important;
-        flex: 1 1 100% !important;
-        flex-basis: 100% !important;
-        min-width: 0 !important;
-    }
-    /* Login form card sits below the brand panel, not beside it */
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="column"]:nth-child(1),
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="stColumn"]:nth-child(1) {
-        order: 1 !important;
-    }
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="column"]:nth-child(2),
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > [data-testid="stColumn"]:nth-child(2) {
-        order: 2 !important;
-        margin-top: 4px !important;
-    }
-    .ui-auth-brand { height: auto !important; }
-}
-
-/* ============ HEADER — stop sun/moon icon overlapping the wordmark ============ */
-@media (max-width: 640px) {
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
-        flex-wrap: wrap !important;
-        row-gap: 10px !important;
-        column-gap: 0 !important;
-    }
-    /* Row 1: brand/logo takes the full width on its own line */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(1),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(1) {
-        order: 1 !important;
-        flex: 1 1 100% !important;
-        max-width: 100% !important;
-    }
-    /* Row 2: nav tabs (if any) */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(2),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(2) {
-        order: 3 !important;
-        flex: 1 1 100% !important;
-        max-width: 100% !important;
-    }
-    /* Row 2 (right-aligned): theme toggle, profile, logout — pushed clear of the wordmark */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(3),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(3) {
-        order: 2 !important;
-        flex: 1 1 100% !important;
-        max-width: 100% !important;
-        justify-content: flex-end !important;
-    }
-    .ui-wordmark {
-        display: inline-block !important;
-        font-size: 15px !important;
-    }
-}
-"""
-
-
 def build_global_css(*, login: bool = False) -> str:
     from src.ui.logo import LOGO_CSS
 
@@ -1718,5 +1636,4 @@ def build_global_css(*, login: bool = False) -> str:
         _ctrl_buttons(),
     ]
     sections.append(_auth() if login else _header())
-    sections.append(_mobile_fixes())
     return "<style>\n" + "\n".join(sections) + "\n</style>"
