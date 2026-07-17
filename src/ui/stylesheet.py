@@ -661,9 +661,7 @@ def _inputs() -> str:
     opacity: 1 !important;
 }}
 div[data-baseweb="popover"],
-div[data-baseweb="popover"] > div,
-[data-testid="stPopoverBody"],
-[data-testid="stPopoverBody"] > div {{
+[data-testid="stPopoverBody"] {{
     background-color: var(--ui-elevated) !important;
     background: var(--ui-elevated) !important;
     border: 1px solid var(--ui-border) !important;
