@@ -637,38 +637,29 @@ def _inputs() -> str:
     stroke: currentColor !important;
 }}
 
-/* purana block (line 640-662) hata ke ye daalo */
+/* Select / dropdown — semantic text so Baseweb never paints white-on-white */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
-[data-testid="stSelectbox"] * {{
-    color: var(--ui-text) !important;
-    -webkit-text-fill-color: var(--ui-text) !important;
-    opacity: 1 !important;
-}}
 [data-testid="stSelectbox"] [data-baseweb="select"],
 [data-testid="stSelectbox"] [data-baseweb="select"] > div {{
     background: var(--ui-input) !important;
+    color: var(--ui-text) !important;
+}}
+[data-testid="stSelectbox"] [data-baseweb="select"] div,
+[data-testid="stSelectbox"] [data-baseweb="select"] span,
+[data-testid="stSelectbox"] [data-baseweb="select"] input,
+[data-testid="stSelectbox"] [data-baseweb="select"] [value],
+[data-testid="stSelectbox"] div[aria-live],
+[data-testid="stSelectbox"] div[aria-selected] {{
+    color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+    opacity: 1 !important;
+    caret-color: var(--ui-text) !important;
 }}
 [data-testid="stSelectbox"] [data-baseweb="select"] svg {{
     color: var(--ui-text-3) !important;
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
 }}
-/* Dropdown popover (renders in a portal outside the select) */
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] * {{
-    color: var(--ui-text) !important;
-    -webkit-text-fill-color: var(--ui-text) !important;
-}}
-div[data-baseweb="popover"] [role="option"] {{
-    background: var(--ui-elevated) !important;
-}}
-div[data-baseweb="popover"] [role="option"]:hover,
-div[data-baseweb="popover"] [aria-selected="true"] {{
-    background: var(--ui-accent-soft) !important;
-}}
-background: var(--ui-elevated) !important;
-border: 1px solid var(--ui-border) !important;
-box-shadow: var(--ui-shadow-lg) !important;
 div[data-baseweb="popover"] {{
     color: var(--ui-text) !important;
 }}
@@ -1759,10 +1750,14 @@ def _responsive() -> str:
     /* Hide theme toggle in header on mobile */
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="main_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="main_theme"]),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]),
     .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_theme"],
+    .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
+    .block-container:has(.ui-hdr-anchor) [class*="stKey-main_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_theme_toggle"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-ui_theme_toggle"] {
         display: none !important;
@@ -1804,12 +1799,14 @@ def _responsive() -> str:
     .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="stColumn"] {
         flex: 1 1 calc(50% - 12px) !important;
         min-width: calc(50% - 12px) !important;
+        margin-bottom: 12px !important;
     }
     @media (max-width: 600px) {
         .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="column"],
         .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="stColumn"] {
             flex: 1 1 100% !important;
             min-width: 100% !important;
+            margin-bottom: 12px !important;
         }
     }
 
