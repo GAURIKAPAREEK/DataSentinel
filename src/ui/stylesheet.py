@@ -929,33 +929,13 @@ def _header() -> str:
     font-weight: 700; font-size: 16px; flex-shrink: 0;
 }}
 .ui-profile-body {{ flex: 1; min-width: 0; }}
-.ui-profile-label,
-[data-baseweb="popover"] .ui-profile-label,
-[data-testid="stMarkdownContainer"] .ui-profile-label {{
-    margin: 8px 0 2px !important; font-size: 11px !important; font-weight: 600 !important;
-    text-transform: uppercase !important; letter-spacing: 0.06em !important;
-    color: var(--ui-text-3) !important;
-    -webkit-text-fill-color: var(--ui-text-3) !important;
-    opacity: 1 !important;
+.ui-profile-label {{
+    margin: 8px 0 2px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ui-text-3);
 }}
-.ui-profile-label:first-child {{ margin-top: 0 !important; }}
-.ui-profile-name,
-[data-baseweb="popover"] .ui-profile-name,
-[data-testid="stMarkdownContainer"] .ui-profile-name {{
-    margin: 0 !important; font-size: 16px !important; font-weight: 700 !important;
-    color: var(--ui-text) !important;
-    -webkit-text-fill-color: var(--ui-text) !important;
-    opacity: 1 !important;
-}}
-.ui-profile-meta,
-[data-baseweb="popover"] .ui-profile-meta,
-[data-testid="stMarkdownContainer"] .ui-profile-meta {{
-    margin: 0 !important; font-size: 13px !important;
-    color: var(--ui-text-2) !important;
-    -webkit-text-fill-color: var(--ui-text-2) !important;
-    opacity: 1 !important;
-    word-break: break-all !important;
-}}
+.ui-profile-label:first-child {{ margin-top: 0; }}
+.ui-profile-name {{ margin: 0; font-size: 16px; font-weight: 700; color: var(--ui-text); }}
+.ui-profile-meta {{ margin: 0; font-size: 13px; color: var(--ui-text-2); word-break: break-all; }}
 .ui-profile-chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }}
 .ui-profile-chips span {{
     font-size: 11px; font-weight: 600; color: var(--ui-primary);
@@ -1144,10 +1124,15 @@ def _dashboard() -> str:
     margin: 0 0 {SP[12]}px; font-size: 11px; font-weight: 700;
     letter-spacing: 0.12em; text-transform: uppercase; color: var(--ui-primary) !important;
 }}
-.ui-how-grid {{
-    list-style: none; margin: 0; padding: 0;
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: {SP[16]}px; align-items: stretch;
+.ui-how-grid, [data-testid="stMarkdownContainer"] ol.ui-how-grid {{
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    padding-inline-start: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: {SP[16]}px !important;
+    align-items: stretch !important;
 }}
 .ui-how-step {{
     display: flex; flex-direction: column; justify-content: center;
@@ -1185,10 +1170,10 @@ def _dashboard() -> str:
     .ui-how-step:hover {{ transform: none; }}
 }}
 @media (max-width: 1000px) {{
-    .ui-how-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+    .ui-how-grid, [data-testid="stMarkdownContainer"] ol.ui-how-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }}
 }}
 @media (max-width: 640px) {{
-    .ui-how-grid {{ grid-template-columns: 1fr; }}
+    .ui-how-grid, [data-testid="stMarkdownContainer"] ol.ui-how-grid {{ grid-template-columns: 1fr !important; }}
     .ui-how-step {{ min-height: 96px; }}
 }}
 
@@ -1423,6 +1408,8 @@ def _auth() -> str:
     padding: {SP[16]}px {SP[24]}px !important; overflow: hidden !important;
 }}
 .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) {{
+    display: flex !important;
+    flex-direction: row !important;
     align-items: stretch !important; gap: {SP[24]}px !important;
     min-height: clamp(560px, 78vh, 780px) !important;
 }}
@@ -1615,35 +1602,31 @@ def _auth() -> str:
         padding: {SP[16]}px {SP[16]}px {SP[24]}px !important; overflow: auto !important;
     }}
     .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) {{
+        display: flex !important;
         flex-direction: column !important;
+        grid-template-columns: 1fr !important;
         min-height: 0 !important;
         gap: {SP[16]}px !important;
     }}
     .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child,
     .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:last-child {{
         width: 100% !important;
-    }}
-    /* Blue brand panel: expand to fit content — no clipping of Monitor / features */
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child {{
-        overflow: visible !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
         height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
+        min-height: min-content !important;
     }}
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child > div {{
+    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child > div,
+    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:last-child > div {{
         height: auto !important;
+        min-height: min-content !important;
     }}
     .ui-auth-brand {{
+        height: auto !important;
         overflow: visible !important;
-        height: auto !important;
-        padding: 20px 18px !important;
     }}
-    .ui-auth-features {{ margin-top: 14px !important; }}
-    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor) {{
-        height: auto !important;
-        min-height: 100vh !important;
-        overflow: auto !important;
-    }}
+    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor) {{ height: auto !important; overflow: auto !important; }}
 }}
 @media (max-width: 480px) {{
     .ui-auth-features {{ grid-template-columns: 1fr; }}
@@ -1671,7 +1654,7 @@ def _responsive() -> str:
    ================================================================== */
 
 /* Mobile-only wordmark shown below the blue hero card */
-.ui-mobile-wordmark { display: none !important; }
+.ui-mobile-wordmark { display: none; }
 
 /* --- Desktop: hide hamburger column completely --- */
 @media (min-width: 901px) {
@@ -1749,17 +1732,19 @@ def _responsive() -> str:
         margin-bottom: 6px !important;
     }
     /* Wordmark: hidden inside header (moved below hero) */
-    /* Wordmark: SHOW inside header on mobile, next to logo (left side).
-       Hide the below-hero duplicate. */
-    .ui-wordmark {
-        display: inline-block !important;
-        font-size: 15px !important;
-        max-width: 120px !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
+    .ui-wordmark { display: none !important; }
+    .ui-mobile-wordmark {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 4px 0 14px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ui-text);
     }
-    .ui-mobile-wordmark { display: none !important; }
 
     /* --- Blue hero card: never clip; show full detail on mobile --- */
     .ui-hero {
@@ -1795,236 +1780,10 @@ def _responsive() -> str:
 }
 
 @media (max-width: 480px) {
-    .ui-mobile-wordmark { display: none !important; }
-    .ui-wordmark { font-size: 13px !important; max-width: 90px !important; }
+    .ui-mobile-wordmark { font-size: 16px; }
     .ui-hero { padding: 14px 14px !important; }
 }
-
-/* --- How it works: even, centered layout on tablet/mobile --- */
-@media (max-width: 1000px) {
-    .ui-how { padding: 16px 16px !important; }
-    .ui-how-kicker { text-align: center !important; }
-    .ui-how-grid { gap: 12px !important; }
-    .ui-how-step { padding: 16px 18px !important; }
-    .ui-how-inner {
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 14px !important;
-    }
-    .ui-how-num {
-        min-width: 26px !important;
-        text-align: left !important;
-        padding-top: 0 !important;
-        font-size: 13px !important;
-    }
-    .ui-how-body { flex: 1 1 auto !important; }
-}
-
-/* --- Header logout / profile popover: avoid overlapping content below --- */
-.block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
-    margin-bottom: 20px !important;
-    position: relative;
-    z-index: 20;
-}
-/* Ensure popover panel floats cleanly above the page content */
-div[data-baseweb="popover"] { z-index: 9999 !important; }
-.st-key-hdr_profile [data-baseweb="popover"],
-.stKey-hdr_profile [data-baseweb="popover"] { z-index: 9999 !important; }
-
-/* =====================================================================
-   FINAL OVERRIDES (last-wins)
-   ===================================================================== */
-
-/* Profile popover: solid opaque panel + forced text colors so the name is
-   readable in LIGHT theme on mobile + desktop, and logout button never
-   bleeds through the popover surface. */
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] [data-baseweb="popover-inner"],
-div[data-baseweb="popover"] [role="dialog"],
-div[data-baseweb="popover"] > div,
-[data-testid="stPopoverBody"] {
-    background: var(--ui-card, #ffffff) !important;
-    color: var(--ui-text, #0B1220) !important;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.14) !important;
-    border: 1px solid var(--ui-border, rgba(15,23,42,0.12)) !important;
-    border-radius: 16px !important;
-}
-/* Force text color inside the popover regardless of theme */
-div[data-baseweb="popover"] .ui-profile-name,
-[data-testid="stPopoverBody"] .ui-profile-name,
-div[data-baseweb="popover"] p.ui-profile-name {
-    color: var(--ui-text, #0B1220) !important;
-    -webkit-text-fill-color: var(--ui-text, #0B1220) !important;
-    opacity: 1 !important;
-    text-shadow: none !important;
-}
-div[data-baseweb="popover"] .ui-profile-meta,
-[data-testid="stPopoverBody"] .ui-profile-meta,
-div[data-baseweb="popover"] p.ui-profile-meta {
-    color: var(--ui-text-2, #334155) !important;
-    -webkit-text-fill-color: var(--ui-text-2, #334155) !important;
-    opacity: 1 !important;
-}
-div[data-baseweb="popover"] .ui-profile-label,
-[data-testid="stPopoverBody"] .ui-profile-label {
-    color: var(--ui-text-3, #64748B) !important;
-    -webkit-text-fill-color: var(--ui-text-3, #64748B) !important;
-    opacity: 1 !important;
-}
-
-/* Give the header extra breathing space so popover never overlaps the
-   hero card / content below in either theme. */
-.block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
-    margin-bottom: 32px !important;
-}
-/* Header row itself sits above; but the logout button must sit BELOW the
-   popover so it never peeks through. */
-.block-container:has(.ui-hdr-anchor) [class*="st-key-ui_logout_btn"] {
-    position: relative;
-    z-index: 1 !important;
-}
-
-/* How it works: guarantee every step (including 04 Monitor) is fully
-   visible; card + parent never clip children. */
-.ui-how { overflow: visible !important; }
-.ui-how-grid { overflow: visible !important; }
-.ui-how-step { overflow: visible !important; height: auto !important; }
-[data-testid="stElementContainer"]:has(.ui-how),
-[data-testid="element-container"]:has(.ui-how) {
-    overflow: visible !important;
-    max-height: none !important;
-    height: auto !important;
-}
-
-/* Center the How-it-works block + kicker on tablet & mobile */
-@media (max-width: 1000px) {
-    .ui-how { text-align: center !important; }
-    .ui-how-kicker { text-align: center !important; }
-    .ui-how-grid { justify-items: stretch !important; }
-    .ui-how-inner { text-align: left !important; }
-    .ui-how-body { text-align: left !important; align-items: flex-start !important; }
-}
-
-/* Auth blue-panel: ensure Monitor feature never clips on mobile */
-@media (max-width: 900px) {
-    .ui-auth-features { overflow: visible !important; }
-    .ui-auth-feat { overflow: visible !important; height: auto !important; }
-}
-
-/* =====================================================================
-   MOBILE / TABLET FINAL POLISH — auth blue box + How-it-works centering
-   ===================================================================== */
-
-/* Auth page (login + forgot + signup + reset): let the whole page scroll
-   and give the blue brand panel enough room to render every feature
-   card, including Monitor, on phones/tablets. */
-@media (max-width: 900px) {
-    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor),
-    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor) [data-testid="stMain"] {
-        height: auto !important;
-        min-height: 100vh !important;
-        max-height: none !important;
-        overflow: auto !important;
-    }
-    .block-container:has(.ui-auth-anchor) {
-        height: auto !important;
-        min-height: 100vh !important;
-        max-height: none !important;
-        overflow: visible !important;
-        justify-content: flex-start !important;
-        padding: 18px 14px 28px !important;
-    }
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) {
-        min-height: 0 !important;
-        height: auto !important;
-    }
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child,
-    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:last-child {
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        overflow: visible !important;
-    }
-    .ui-auth-brand {
-        height: auto !important;
-        overflow: visible !important;
-        padding: 22px 20px !important;
-    }
-    /* Keep the 2×2 feature grid but let each card grow so text never clips. */
-    .ui-auth-features {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 10px !important;
-        margin-top: 14px !important;
-    }
-    .ui-auth-feat {
-        min-height: 0 !important;
-        padding: 12px 12px !important;
-    }
-    .ui-auth-headline { font-size: clamp(20px, 4.8vw, 26px) !important; }
-    .ui-auth-lede { font-size: 13px !important; }
-    .ui-auth-foot { margin-top: 20px !important; }
-}
-@media (max-width: 520px) {
-    /* On very small phones stack features into a single column so every one
-       (including Monitor) is fully visible without horizontal squeeze. */
-    .ui-auth-features { grid-template-columns: 1fr !important; }
-    .block-container:has(.ui-auth-anchor) { padding: 14px 12px 24px !important; }
-    .ui-auth-brand { padding: 18px 16px !important; }
-}
-
-/* How-it-works: fully centered, evenly aligned layout on tablet + mobile.
-   Cards stay full-width in a single column with the number + text block
-   centered as a unit so the section no longer looks lopsided. */
-@media (max-width: 1000px) {
-    .ui-how {
-        text-align: center !important;
-        padding: 18px 16px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-    }
-    .ui-how-kicker {
-        text-align: center !important;
-        display: block !important;
-    }
-    .ui-how-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        justify-items: stretch !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-    }
-    .ui-how-step {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-    }
-    .ui-how-inner {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        width: 100% !important;
-    }
-    .ui-how-num {
-        text-align: center !important;
-        padding-top: 0 !important;
-        font-size: 13px !important;
-    }
-    .ui-how-body {
-        align-items: center !important;
-        text-align: center !important;
-        width: 100% !important;
-    }
-    .ui-how-title,
-    .ui-how-desc { text-align: center !important; }
-}
-@media (max-width: 640px) {
-    .ui-how-grid { grid-template-columns: 1fr !important; }
-    .ui-how-step { min-height: 0 !important; padding: 16px 18px !important; }
-}
 """
-
 
 
 def build_global_css(*, login: bool = False) -> str:
@@ -2044,17 +1803,3 @@ def build_global_css(*, login: bool = False) -> str:
     if not login:
         sections.append(_responsive())
     return "<style>\n" + "\n".join(sections) + "\n</style>"
-@media (max-width:900px){
-
-    /* Header ke side wala theme toggle hide */
-    .block-container:has(.ui-hdr-anchor)
-    [class*="st-key-ui_theme_toggle"]{
-        display:none !important;
-    }
-
-    /* Mobile menu ke andar wala theme toggle show */
-    .block-container:has(.ui-mobile-panel)
-    [class*="st-key-mobile_theme_toggle"]{
-        display:block !important;
-    }
-}
