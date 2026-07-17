@@ -637,53 +637,52 @@ def _inputs() -> str:
     stroke: currentColor !important;
 }}
 
-/* purana block (line 640-662) hata ke ye daalo */
+/* Select / dropdown — semantic text so Baseweb never paints white-on-white */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
-[data-testid="stSelectbox"] * {{
-    color: var(--ui-text) !important;
-    -webkit-text-fill-color: var(--ui-text) !important;
-    opacity: 1 !important;
-}}
 [data-testid="stSelectbox"] [data-baseweb="select"],
 [data-testid="stSelectbox"] [data-baseweb="select"] > div {{
     background: var(--ui-input) !important;
+    color: var(--ui-text) !important;
+}}
+[data-testid="stSelectbox"] [data-baseweb="select"] div,
+[data-testid="stSelectbox"] [data-baseweb="select"] span,
+[data-testid="stSelectbox"] [data-baseweb="select"] input,
+[data-testid="stSelectbox"] [data-baseweb="select"] [value],
+[data-testid="stSelectbox"] div[aria-live],
+[data-testid="stSelectbox"] div[aria-selected] {{
+    color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+    opacity: 1 !important;
+    caret-color: var(--ui-text) !important;
 }}
 [data-testid="stSelectbox"] [data-baseweb="select"] svg {{
     color: var(--ui-text-3) !important;
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
 }}
-/* Dropdown popover (renders in a portal outside the select) */
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] * {{
-    color: var(--ui-text) !important;
-    -webkit-text-fill-color: var(--ui-text) !important;
-}}
-div[data-baseweb="popover"] [role="option"] {{
-    background: var(--ui-elevated) !important;
-}}
-div[data-baseweb="popover"] [role="option"]:hover,
-div[data-baseweb="popover"] [aria-selected="true"] {{
-    background: var(--ui-accent-soft) !important;
-}}
 div[data-baseweb="popover"],
 div[data-baseweb="popover"] > div,
-div[data-baseweb="popover"] [data-testid="stPopoverBody"] {{
+[data-testid="stPopoverBody"],
+[data-testid="stPopoverBody"] > div {{
     background-color: var(--ui-elevated) !important;
     background: var(--ui-elevated) !important;
     border: 1px solid var(--ui-border) !important;
     box-shadow: var(--ui-shadow-lg) !important;
-    color: var(--ui-text) !important;
 }}
-div[data-baseweb="popover"] .ui-profile-card,
-div[data-baseweb="popover"] .ui-profile-card * {{
+div[data-baseweb="popover"] *,
+[data-testid="stPopoverBody"] * {{
     color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
 }}
-div[data-baseweb="popover"] .ui-profile-label {{
+div[data-baseweb="popover"] .ui-profile-label,
+[data-testid="stPopoverBody"] .ui-profile-label {{
     color: var(--ui-text-3) !important;
+    -webkit-text-fill-color: var(--ui-text-3) !important;
 }}
-div[data-baseweb="popover"] .ui-profile-meta {{
+div[data-baseweb="popover"] .ui-profile-meta,
+[data-testid="stPopoverBody"] .ui-profile-meta {{
     color: var(--ui-text-2) !important;
+    -webkit-text-fill-color: var(--ui-text-2) !important;
 }}
 div[data-baseweb="popover"] ul[role="listbox"],
 div[data-baseweb="popover"] ul[role="listbox"] li,
@@ -1730,17 +1729,22 @@ def _responsive() -> str:
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(1),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(1) {
         flex: 0 0 auto !important;
+        min-width: 0 !important;
+        width: auto !important;
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(3),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(3) {
         flex: 1 1 auto !important;
+        min-width: 0 !important;
+        width: auto !important;
         justify-content: flex-end !important;
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(4),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(4) {
         flex: 0 0 auto !important;
-        justify-content: flex-end !important;
         min-width: 44px !important;
+        width: auto !important;
+        justify-content: flex-end !important;
     }
     /* Compact burger button */
     .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_burger_btn"] button,
@@ -1769,15 +1773,15 @@ def _responsive() -> str:
     .ui-mobile-wordmark {
         display: none !important;
     }
-    /* Hide theme toggle in header on mobile (excluding outer actions wrapper) */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="main_theme"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="main_theme"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_logout_btn"]):not(:has(.ui-hdr-actions)),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_logout_btn"]):not(:has(.ui-hdr-actions)),
+    /* Hide theme toggle and logout columns in header on mobile */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="main_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="main_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_logout_btn"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_logout_btn"]),
     .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
@@ -1804,6 +1808,13 @@ def _responsive() -> str:
         gap: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+        min-width: 0 !important;
+        width: auto !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
     }
     /* Center the 'How it works' kicker on mobile */
     .ui-how-kicker {
