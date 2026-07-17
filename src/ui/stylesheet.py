@@ -637,28 +637,34 @@ def _inputs() -> str:
     stroke: currentColor !important;
 }}
 
-/* Select / dropdown — semantic text so Baseweb never paints white-on-white */
+/* purana block (line 640-662) hata ke ye daalo */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
-[data-testid="stSelectbox"] [data-baseweb="select"],
-[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
-    background: var(--ui-input) !important;
-    color: var(--ui-text) !important;
-}}
-[data-testid="stSelectbox"] [data-baseweb="select"] div,
-[data-testid="stSelectbox"] [data-baseweb="select"] span,
-[data-testid="stSelectbox"] [data-baseweb="select"] input,
-[data-testid="stSelectbox"] [data-baseweb="select"] [value],
-[data-testid="stSelectbox"] div[aria-live],
-[data-testid="stSelectbox"] div[aria-selected] {{
+[data-testid="stSelectbox"] * {{
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
     opacity: 1 !important;
-    caret-color: var(--ui-text) !important;
+}}
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
+    background: var(--ui-input) !important;
 }}
 [data-testid="stSelectbox"] [data-baseweb="select"] svg {{
     color: var(--ui-text-3) !important;
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
+}}
+/* Dropdown popover (renders in a portal outside the select) */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] * {{
+    color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+}}
+div[data-baseweb="popover"] [role="option"] {{
+    background: var(--ui-elevated) !important;
+}}
+div[data-baseweb="popover"] [role="option"]:hover,
+div[data-baseweb="popover"] [aria-selected="true"] {{
+    background: var(--ui-accent-soft) !important;
 }}
 background: var(--ui-elevated) !important;
 border: 1px solid var(--ui-border) !important;
