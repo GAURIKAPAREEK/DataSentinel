@@ -1669,6 +1669,11 @@ def _responsive() -> str:
         margin: 0 !important;
         overflow: hidden !important;
     }
+    /* Hide profile popover logout button on laptops/desktops since we have an external logout button */
+    [class*="st-key-ui_logout_btn_profile"],
+    [class*="stKey-ui_logout_btn_profile"] {
+        display: none !important;
+    }
 }
 
 /* --- Mobile (<=900px): burger visible, inline nav hidden --- */
