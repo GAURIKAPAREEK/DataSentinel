@@ -1622,6 +1622,148 @@ def _auth() -> str:
 """
 
 
+def _responsive() -> str:
+    return """
+/* ==================================================================
+   Responsive header — hamburger on mobile only, inline nav on desktop
+   Nav items (Dashboard / Analytics / History) live inside the burger
+   on mobile; theme toggle + profile stay in the header row next to it.
+   Desktop (>=901px) hides the hamburger entirely.
+   ================================================================== */
+
+/* Mobile-only wordmark shown below the blue hero card */
+.ui-mobile-wordmark { display: none; }
+
+/* --- Desktop: hide hamburger column completely --- */
+@media (min-width: 901px) {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-hdr-burger),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-hdr-burger) {
+        display: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        flex: 0 0 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+/* --- Mobile (<=900px): burger visible, inline nav hidden --- */
+@media (max-width: 900px) {
+    /* Hide the inline nav column (dashboard/analytics/history buttons) */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-nav-row),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-nav-row) {
+        display: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        flex: 0 0 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    /* Hide the desktop-only logout button (available inside profile popover) */
+    .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_logout_btn"]:not([class*="ui_logout_btn_profile"]),
+    .block-container:has(.ui-hdr-anchor) [class*="stKey-ui_logout_btn"]:not([class*="ui_logout_btn_profile"]) {
+        display: none !important;
+    }
+    /* Tighten header, keep row on one line: brand | actions | burger */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+        min-height: 60px !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(1),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(1) {
+        flex: 0 0 auto !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(3),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(3) {
+        flex: 1 1 auto !important;
+        justify-content: flex-end !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(4),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(4) {
+        flex: 0 0 auto !important;
+        justify-content: flex-end !important;
+        min-width: 44px !important;
+    }
+    /* Compact burger button */
+    .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_burger_btn"] button,
+    .block-container:has(.ui-hdr-anchor) [class*="stKey-ui_burger_btn"] button {
+        min-width: 44px !important;
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+    }
+    /* Mobile nav dropdown items — full width */
+    .block-container:has(.ui-hdr-anchor) [class*="st-key-mnav_"] button,
+    .block-container:has(.ui-hdr-anchor) [class*="stKey-mnav_"] button {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        margin-bottom: 6px !important;
+    }
+    /* Wordmark: hidden inside header (moved below hero) */
+    .ui-wordmark { display: none !important; }
+    .ui-mobile-wordmark {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 4px 0 14px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ui-text);
+    }
+
+    /* --- Blue hero card: never clip; show full detail on mobile --- */
+    .ui-hero {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        padding: 18px 18px !important;
+        overflow: visible !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .ui-hero-copy {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+    .ui-hero-title {
+        font-size: clamp(20px, 5.5vw, 26px) !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        line-height: 1.2 !important;
+    }
+    .ui-hero-kicker { font-size: 10px !important; }
+    .ui-hero-lede {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        max-width: 100% !important;
+    }
+    .ui-hero-status { justify-self: start !important; }
+}
+
+@media (max-width: 480px) {
+    .ui-mobile-wordmark { font-size: 16px; }
+    .ui-hero { padding: 14px 14px !important; }
+}
+"""
+
+
 def build_global_css(*, login: bool = False) -> str:
     from src.ui.logo import LOGO_CSS
 
@@ -1636,4 +1778,6 @@ def build_global_css(*, login: bool = False) -> str:
         _ctrl_buttons(),
     ]
     sections.append(_auth() if login else _header())
+    if not login:
+        sections.append(_responsive())
     return "<style>\n" + "\n".join(sections) + "\n</style>"
