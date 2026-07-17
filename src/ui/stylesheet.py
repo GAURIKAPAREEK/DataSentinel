@@ -2044,3 +2044,17 @@ def build_global_css(*, login: bool = False) -> str:
     if not login:
         sections.append(_responsive())
     return "<style>\n" + "\n".join(sections) + "\n</style>"
+@media (max-width:900px){
+
+    /* Header ke side wala theme toggle hide */
+    .block-container:has(.ui-hdr-anchor)
+    [class*="st-key-ui_theme_toggle"]{
+        display:none !important;
+    }
+
+    /* Mobile menu ke andar wala theme toggle show */
+    .block-container:has(.ui-mobile-panel)
+    [class*="st-key-mobile_theme_toggle"]{
+        display:block !important;
+    }
+}
