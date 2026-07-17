@@ -1671,7 +1671,7 @@ def _responsive() -> str:
    ================================================================== */
 
 /* Mobile-only wordmark shown below the blue hero card */
-.ui-mobile-wordmark { display: none; }
+.ui-mobile-wordmark { display: none !important; }
 
 /* --- Desktop: hide hamburger column completely --- */
 @media (min-width: 901px) {
@@ -1749,19 +1749,17 @@ def _responsive() -> str:
         margin-bottom: 6px !important;
     }
     /* Wordmark: hidden inside header (moved below hero) */
-    .ui-wordmark { display: none !important; }
-    .ui-mobile-wordmark {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        margin: 4px 0 14px;
-        font-family: 'Outfit', sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: var(--ui-text);
+    /* Wordmark: SHOW inside header on mobile, next to logo (left side).
+       Hide the below-hero duplicate. */
+    .ui-wordmark {
+        display: inline-block !important;
+        font-size: 15px !important;
+        max-width: 120px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }
+    .ui-mobile-wordmark { display: none !important; }
 
     /* --- Blue hero card: never clip; show full detail on mobile --- */
     .ui-hero {
@@ -1797,7 +1795,8 @@ def _responsive() -> str:
 }
 
 @media (max-width: 480px) {
-    .ui-mobile-wordmark { font-size: 16px; }
+    .ui-mobile-wordmark { display: none !important; }
+    .ui-wordmark { font-size: 13px !important; max-width: 90px !important; }
     .ui-hero { padding: 14px 14px !important; }
 }
 
@@ -1831,6 +1830,86 @@ def _responsive() -> str:
 div[data-baseweb="popover"] { z-index: 9999 !important; }
 .st-key-hdr_profile [data-baseweb="popover"],
 .stKey-hdr_profile [data-baseweb="popover"] { z-index: 9999 !important; }
+
+/* =====================================================================
+   FINAL OVERRIDES (last-wins)
+   ===================================================================== */
+
+/* Profile popover: solid opaque panel + forced text colors so the name is
+   readable in LIGHT theme on mobile + desktop, and logout button never
+   bleeds through the popover surface. */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] [data-baseweb="popover-inner"],
+div[data-baseweb="popover"] [role="dialog"],
+div[data-baseweb="popover"] > div,
+[data-testid="stPopoverBody"] {
+    background: var(--ui-card, #ffffff) !important;
+    color: var(--ui-text, #0B1220) !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.14) !important;
+    border: 1px solid var(--ui-border, rgba(15,23,42,0.12)) !important;
+    border-radius: 16px !important;
+}
+/* Force text color inside the popover regardless of theme */
+div[data-baseweb="popover"] .ui-profile-name,
+[data-testid="stPopoverBody"] .ui-profile-name,
+div[data-baseweb="popover"] p.ui-profile-name {
+    color: var(--ui-text, #0B1220) !important;
+    -webkit-text-fill-color: var(--ui-text, #0B1220) !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+div[data-baseweb="popover"] .ui-profile-meta,
+[data-testid="stPopoverBody"] .ui-profile-meta,
+div[data-baseweb="popover"] p.ui-profile-meta {
+    color: var(--ui-text-2, #334155) !important;
+    -webkit-text-fill-color: var(--ui-text-2, #334155) !important;
+    opacity: 1 !important;
+}
+div[data-baseweb="popover"] .ui-profile-label,
+[data-testid="stPopoverBody"] .ui-profile-label {
+    color: var(--ui-text-3, #64748B) !important;
+    -webkit-text-fill-color: var(--ui-text-3, #64748B) !important;
+    opacity: 1 !important;
+}
+
+/* Give the header extra breathing space so popover never overlaps the
+   hero card / content below in either theme. */
+.block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
+    margin-bottom: 32px !important;
+}
+/* Header row itself sits above; but the logout button must sit BELOW the
+   popover so it never peeks through. */
+.block-container:has(.ui-hdr-anchor) [class*="st-key-ui_logout_btn"] {
+    position: relative;
+    z-index: 1 !important;
+}
+
+/* How it works: guarantee every step (including 04 Monitor) is fully
+   visible; card + parent never clip children. */
+.ui-how { overflow: visible !important; }
+.ui-how-grid { overflow: visible !important; }
+.ui-how-step { overflow: visible !important; height: auto !important; }
+[data-testid="stElementContainer"]:has(.ui-how),
+[data-testid="element-container"]:has(.ui-how) {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+}
+
+/* Center the How-it-works block + kicker on tablet & mobile */
+@media (max-width: 1000px) {
+    .ui-how { text-align: center !important; }
+    .ui-how-kicker { text-align: center !important; }
+    .ui-how-grid { justify-items: stretch !important; }
+    .ui-how-inner { text-align: left !important; }
+    .ui-how-body { text-align: left !important; align-items: flex-start !important; }
+}
+
+/* Auth blue-panel: ensure Monitor feature never clips on mobile */
+@media (max-width: 900px) {
+    .ui-auth-features { overflow: visible !important; }
+    .ui-auth-feat { overflow: visible !important; height: auto !important; }
+}
 """
 
 
