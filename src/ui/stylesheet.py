@@ -1134,13 +1134,16 @@ def _dashboard() -> str:
     gap: {SP[16]}px !important;
     align-items: stretch !important;
 }}
-.ui-how-step {{
-    display: flex; flex-direction: column; justify-content: center;
-    height: 100%; min-height: 118px;
-    padding: 20px 18px; border-radius: 12px;
-    background: var(--ui-card); border: 1px solid var(--ui-border);
-    box-shadow: var(--ui-shadow-sm);
-    transition: transform 240ms {EASING}, box-shadow 240ms {EASING}, border-color 240ms {EASING};
+.ui-how-step, [data-testid="stMarkdownContainer"] ol.ui-how-grid li.ui-how-step {{
+    margin: 0 !important;
+    padding: 20px 18px !important;
+    list-style-type: none !important;
+    display: flex !important; flex-direction: column !important; justify-content: center !important;
+    height: 100% !important; min-height: 118px !important;
+    background: var(--ui-card) !important; border: 1px solid var(--ui-border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--ui-shadow-sm) !important;
+    transition: transform 240ms {EASING}, box-shadow 240ms {EASING}, border-color 240ms {EASING} !important;
 }}
 .ui-how-step:hover {{
     transform: translateY(-2px);
@@ -1745,11 +1748,30 @@ def _responsive() -> str:
         display: none !important;
     }
     /* Hide theme toggle in header on mobile */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]),
     .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_theme_toggle"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-ui_theme_toggle"] {
         display: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        flex: 0 0 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+    /* Center the 'How it works' kicker on mobile */
+    .ui-how-kicker {
+        text-align: center !important;
+    }
+    /* Reset height of steps on mobile screen */
+    .ui-how-step, [data-testid="stMarkdownContainer"] ol.ui-how-grid li.ui-how-step {
+        min-height: 96px !important;
     }
     /* Stack the Upload and Activity panels on mobile/tablet */
     .block-container div[data-testid="stHorizontalBlock"]:has(.ui-panel-anchor) {
