@@ -660,6 +660,9 @@ def _inputs() -> str:
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
 }}
+background: var(--ui-elevated) !important;
+border: 1px solid var(--ui-border) !important;
+box-shadow: var(--ui-shadow-lg) !important;
 div[data-baseweb="popover"] {{
     color: var(--ui-text) !important;
 }}
