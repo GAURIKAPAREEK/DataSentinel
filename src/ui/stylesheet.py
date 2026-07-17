@@ -929,13 +929,33 @@ def _header() -> str:
     font-weight: 700; font-size: 16px; flex-shrink: 0;
 }}
 .ui-profile-body {{ flex: 1; min-width: 0; }}
-.ui-profile-label {{
-    margin: 8px 0 2px; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ui-text-3);
+.ui-profile-label,
+[data-baseweb="popover"] .ui-profile-label,
+[data-testid="stMarkdownContainer"] .ui-profile-label {{
+    margin: 8px 0 2px !important; font-size: 11px !important; font-weight: 600 !important;
+    text-transform: uppercase !important; letter-spacing: 0.06em !important;
+    color: var(--ui-text-3) !important;
+    -webkit-text-fill-color: var(--ui-text-3) !important;
+    opacity: 1 !important;
 }}
-.ui-profile-label:first-child {{ margin-top: 0; }}
-.ui-profile-name {{ margin: 0; font-size: 16px; font-weight: 700; color: var(--ui-text); }}
-.ui-profile-meta {{ margin: 0; font-size: 13px; color: var(--ui-text-2); word-break: break-all; }}
+.ui-profile-label:first-child {{ margin-top: 0 !important; }}
+.ui-profile-name,
+[data-baseweb="popover"] .ui-profile-name,
+[data-testid="stMarkdownContainer"] .ui-profile-name {{
+    margin: 0 !important; font-size: 16px !important; font-weight: 700 !important;
+    color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+    opacity: 1 !important;
+}}
+.ui-profile-meta,
+[data-baseweb="popover"] .ui-profile-meta,
+[data-testid="stMarkdownContainer"] .ui-profile-meta {{
+    margin: 0 !important; font-size: 13px !important;
+    color: var(--ui-text-2) !important;
+    -webkit-text-fill-color: var(--ui-text-2) !important;
+    opacity: 1 !important;
+    word-break: break-all !important;
+}}
 .ui-profile-chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }}
 .ui-profile-chips span {{
     font-size: 11px; font-weight: 600; color: var(--ui-primary);
@@ -1603,8 +1623,27 @@ def _auth() -> str:
     .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:last-child {{
         width: 100% !important;
     }}
-    .ui-auth-brand {{ overflow: visible; }}
-    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor) {{ height: auto !important; overflow: auto !important; }}
+    /* Blue brand panel: expand to fit content — no clipping of Monitor / features */
+    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child {{
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }}
+    .block-container:has(.ui-auth-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-auth-brand) > div:first-child > div {{
+        height: auto !important;
+    }}
+    .ui-auth-brand {{
+        overflow: visible !important;
+        height: auto !important;
+        padding: 20px 18px !important;
+    }}
+    .ui-auth-features {{ margin-top: 14px !important; }}
+    [data-testid="stAppViewContainer"]:has(.ui-auth-anchor) {{
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow: auto !important;
+    }}
 }}
 @media (max-width: 480px) {{
     .ui-auth-features {{ grid-template-columns: 1fr; }}
@@ -1761,6 +1800,37 @@ def _responsive() -> str:
     .ui-mobile-wordmark { font-size: 16px; }
     .ui-hero { padding: 14px 14px !important; }
 }
+
+/* --- How it works: even, centered layout on tablet/mobile --- */
+@media (max-width: 1000px) {
+    .ui-how { padding: 16px 16px !important; }
+    .ui-how-kicker { text-align: center !important; }
+    .ui-how-grid { gap: 12px !important; }
+    .ui-how-step { padding: 16px 18px !important; }
+    .ui-how-inner {
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 14px !important;
+    }
+    .ui-how-num {
+        min-width: 26px !important;
+        text-align: left !important;
+        padding-top: 0 !important;
+        font-size: 13px !important;
+    }
+    .ui-how-body { flex: 1 1 auto !important; }
+}
+
+/* --- Header logout / profile popover: avoid overlapping content below --- */
+.block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {
+    margin-bottom: 20px !important;
+    position: relative;
+    z-index: 20;
+}
+/* Ensure popover panel floats cleanly above the page content */
+div[data-baseweb="popover"] { z-index: 9999 !important; }
+.st-key-hdr_profile [data-baseweb="popover"],
+.stKey-hdr_profile [data-baseweb="popover"] { z-index: 9999 !important; }
 """
 
 
