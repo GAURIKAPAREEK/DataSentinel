@@ -108,7 +108,6 @@ def render_header(
                     from src.auth import logout_user
 
                     logout_user()
-        import streamlit as st
         with theme_c:
              render_theme_toggle(theme_key)
         with logout_c:
