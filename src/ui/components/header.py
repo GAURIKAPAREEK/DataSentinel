@@ -142,7 +142,7 @@ def render_header(
 
         # 4th option: Theme toggle
         is_dark = st.session_state.get("theme", "dark") == "dark"
-        theme_btn_label = "Theme (Light Mode) ☀️" if is_dark else "Theme (Dark Mode) 🌙"
+        theme_btn_label = "Change theme ☀️" if is_dark else "Change theme 🌙"
         if st.button(
             theme_btn_label,
             key="mnav_theme_toggle",
