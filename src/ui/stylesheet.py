@@ -637,31 +637,53 @@ def _inputs() -> str:
     stroke: currentColor !important;
 }}
 
-/* Select / dropdown — semantic text so Baseweb never paints white-on-white */
+/* purana block (line 640-662) hata ke ye daalo */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
-[data-testid="stSelectbox"] [data-baseweb="select"],
-[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
-    background: var(--ui-input) !important;
-    color: var(--ui-text) !important;
-}}
-[data-testid="stSelectbox"] [data-baseweb="select"] div,
-[data-testid="stSelectbox"] [data-baseweb="select"] span,
-[data-testid="stSelectbox"] [data-baseweb="select"] input,
-[data-testid="stSelectbox"] [data-baseweb="select"] [value],
-[data-testid="stSelectbox"] div[aria-live],
-[data-testid="stSelectbox"] div[aria-selected] {{
+[data-testid="stSelectbox"] * {{
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
     opacity: 1 !important;
-    caret-color: var(--ui-text) !important;
+}}
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
+    background: var(--ui-input) !important;
 }}
 [data-testid="stSelectbox"] [data-baseweb="select"] svg {{
     color: var(--ui-text-3) !important;
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
 }}
-div[data-baseweb="popover"] {{
+/* Dropdown popover (renders in a portal outside the select) */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] * {{
     color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+}}
+div[data-baseweb="popover"] [role="option"] {{
+    background: var(--ui-elevated) !important;
+}}
+div[data-baseweb="popover"] [role="option"]:hover,
+div[data-baseweb="popover"] [aria-selected="true"] {{
+    background: var(--ui-accent-soft) !important;
+}}
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+div[data-baseweb="popover"] [data-testid="stPopoverBody"] {{
+    background-color: var(--ui-elevated) !important;
+    background: var(--ui-elevated) !important;
+    border: 1px solid var(--ui-border) !important;
+    box-shadow: var(--ui-shadow-lg) !important;
+    color: var(--ui-text) !important;
+}}
+div[data-baseweb="popover"] .ui-profile-card,
+div[data-baseweb="popover"] .ui-profile-card * {{
+    color: var(--ui-text) !important;
+}}
+div[data-baseweb="popover"] .ui-profile-label {{
+    color: var(--ui-text-3) !important;
+}}
+div[data-baseweb="popover"] .ui-profile-meta {{
+    color: var(--ui-text-2) !important;
 }}
 div[data-baseweb="popover"] ul[role="listbox"],
 div[data-baseweb="popover"] ul[role="listbox"] li,
@@ -1747,13 +1769,15 @@ def _responsive() -> str:
     .ui-mobile-wordmark {
         display: none !important;
     }
-    /* Hide theme toggle in header on mobile */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="main_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="main_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]),
+    /* Hide theme toggle in header on mobile (excluding outer actions wrapper) */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="hdr_theme"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="hdr_theme"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="main_theme"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="main_theme"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_theme_toggle"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_theme_toggle"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has([class*="ui_logout_btn"]):not(:has(.ui-hdr-actions)),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:has([class*="ui_logout_btn"]):not(:has(.ui-hdr-actions)),
     .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_theme"],
     .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
@@ -1768,6 +1792,18 @@ def _responsive() -> str:
         padding: 0 !important;
         margin: 0 !important;
         overflow: hidden !important;
+    }
+    /* Keep actions columns on a single line so profile popover does not stack/hide */
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     /* Center the 'How it works' kicker on mobile */
     .ui-how-kicker {
