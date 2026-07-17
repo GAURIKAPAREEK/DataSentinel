@@ -34,6 +34,7 @@ def dashboard_hero(*, has_data: bool = False) -> None:
     <div class="ui-status"><span class="ui-status-dot"></span>{html.escape(status)}</div>
   </div>
 </div>
+<div class="ui-mobile-wordmark" aria-hidden="true">DataSentinel</div>
 """,
         unsafe_allow_html=True,
     )
@@ -62,7 +63,8 @@ def how_it_works() -> None:
 def page_intro(title: str, subtitle: str = "") -> None:
     sub = f"<p>{html.escape(subtitle)}</p>" if subtitle else ""
     st.markdown(
-        f'<div class="ui-page-intro ui-fade"><h1>{html.escape(title)}</h1>{sub}</div>',
+        f'<div class="ui-page-intro ui-fade"><h1>{html.escape(title)}</h1>{sub}</div>'
+        f'<div class="ui-mobile-wordmark" aria-hidden="true">DataSentinel</div>',
         unsafe_allow_html=True,
     )
 
