@@ -1071,15 +1071,20 @@ def _header() -> str:
         overflow: hidden !important;
     }}
 
-    /* Hide desktop actions column */
+    /* Keep desktop actions column (theme + profile) visible on mobile;
+       shrink it so it fits next to the hamburger. */
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(3),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(3) {{
-        display: none !important;
-        flex: 0 0 0 !important;
-        width: 0 !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
         min-width: 0 !important;
-        max-width: 0 !important;
-        overflow: hidden !important;
+        max-width: none !important;
+    }}
+
+    /* Hide the standalone Logout button on mobile (logout is available inside the profile popover).
+       Match only the exact desktop-logout key so ui_logout_btn_profile stays visible in the popover. */
+    .block-container:has(.ui-hdr-anchor) .st-key-ui_logout_btn {{
+        display: none !important;
     }}
 
     /* Show hamburger column */
@@ -1107,35 +1112,32 @@ def _header() -> str:
     /* Brand shrinks a touch */
     .ui-wordmark {{ font-size: 17px !important; }}
 
-    /* Mobile dropdown panel — style the buttons that follow */
-    .block-container:has(.ui-mobile-panel) [class*="st-key-mnav_"],
-    .block-container:has(.ui-mobile-panel) [class*="st-key-ui_logout_btn_mobile"],
-    .block-container:has(.ui-mobile-panel) [class*="st-key-mobile_theme"] {{
-        margin-top: 6px !important;
-    }}
-
+    /* Mobile dropdown marker — invisible; only used by :has() selectors to style nav buttons. */
     .ui-mobile-panel {{
         display: block;
-        margin: 0 0 12px;
-        padding: 14px;
-        background: var(--ui-glass);
-        backdrop-filter: blur(18px);
-        border: 1px solid var(--ui-border);
-        border-radius: 16px;
-        box-shadow: var(--ui-shadow-sm);
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }}
+    /* Also collapse the Streamlit element-container that wraps the marker so it adds no gap. */
+    .block-container:has(.ui-hdr-anchor) [data-testid="stMarkdownContainer"]:has(> .ui-mobile-panel),
+    .block-container:has(.ui-hdr-anchor) [data-testid="element-container"]:has(.ui-mobile-panel) {{
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        height: 0 !important;
     }}
 
-    .ui-mobile-user {{
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 4px 6px;
-        border-top: 1px solid var(--ui-border);
-        margin-top: 10px;
+    /* Tight, evenly-spaced nav buttons in the hamburger panel — no leading gap. */
+    .block-container:has(.ui-mobile-panel) [class*="st-key-mnav_"] {{
+        margin: 0 0 8px 0 !important;
     }}
-    .ui-mobile-user-body {{ display: flex; flex-direction: column; gap: 2px; min-width: 0; }}
-    .ui-mobile-user .ui-profile-name {{ font-size: 14px; }}
-    .ui-mobile-user .ui-profile-meta {{ font-size: 12px; }}
+    .block-container:has(.ui-mobile-panel) [class*="st-key-mnav_"]:last-of-type {{
+        margin-bottom: 4px !important;
+    }}
 }}
 
 /* Small phones */
@@ -1357,6 +1359,114 @@ def _dashboard() -> str:
 }}
 [data-testid="stAlert"] {{ margin: {SP[12]}px 0 !important; }}
 [data-testid="stDownloadButton"] {{ margin-top: {SP[8]}px !important; }}
+
+/* =========================================================
+   Global responsive layer — makes stat grids, chart columns,
+   tables, and page padding survive tablet / phone widths.
+   ========================================================= */
+
+/* Tablet: collapse forced-4 stat grids to 2 across, forced-2 chart columns keep side-by-side. */
+@media (max-width: 900px) {{
+    /* Reduce outer page padding on tablet */
+    .block-container {{
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+        padding-top: 12px !important;
+    }}
+
+    /* Stat cards: 4-up → 2-up on tablet by allowing wrap. */
+    .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) {{
+        flex-wrap: wrap !important;
+        row-gap: 12px !important;
+    }}
+    .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="column"],
+    .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="stColumn"] {{
+        flex: 1 1 calc(50% - 8px) !important;
+        width: calc(50% - 8px) !important;
+        min-width: calc(50% - 8px) !important;
+        max-width: 100% !important;
+    }}
+}}
+
+/* Phone: force single column for everything Streamlit renders as st.columns(). */
+@media (max-width: 640px) {{
+    .block-container {{
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        padding-top: 8px !important;
+    }}
+
+    /* Any horizontal block that ISN'T the header brand row wraps to a stack.
+       (Header row keeps flex-nowrap via its own rule that has higher specificity.) */
+    [data-testid="stAppViewContainer"] div[data-testid="stHorizontalBlock"]:not(:has(.ui-brand)) {{
+        flex-wrap: wrap !important;
+        row-gap: 12px !important;
+    }}
+    [data-testid="stAppViewContainer"] div[data-testid="stHorizontalBlock"]:not(:has(.ui-brand)) > [data-testid="column"],
+    [data-testid="stAppViewContainer"] div[data-testid="stHorizontalBlock"]:not(:has(.ui-brand)) > [data-testid="stColumn"] {{
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }}
+
+    /* Stat cards: 2-up → 1-up. */
+    .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="column"],
+    .block-container:has(.ui-stat-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-stat) > [data-testid="stColumn"] {{
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }}
+    .ui-stat {{ min-height: 84px; padding: 14px 16px; }}
+    .ui-stat-value, [data-testid="stMarkdownContainer"] .ui-stat-value {{ font-size: 22px; }}
+
+    /* Hero heading scale down */
+    .ui-hero-title {{ font-size: 22px !important; line-height: 1.25 !important; }}
+    .ui-hero-lede {{ font-size: 14px !important; }}
+    .ui-hero {{ padding: 14px 16px !important; }}
+
+    /* Section titles */
+    .ui-section h3 {{ font-size: 20px !important; }}
+
+    /* Tables: drop the 480px min-width so the whole row fits without side scrolling. */
+    .ui-table-wrap {{
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }}
+    .ui-table {{ min-width: 0 !important; font-size: 12px; }}
+    .ui-table thead th {{ padding: 10px 10px; font-size: 10.5px; letter-spacing: 0.04em; }}
+    .ui-table tbody td {{ padding: 10px 10px; word-break: break-word; }}
+
+    /* Plotly charts: shrink height so they don't dominate the screen */
+    [data-testid="stPlotlyChart"], .js-plotly-plot, .plot-container {{
+        width: 100% !important;
+        min-width: 0 !important;
+    }}
+    [data-testid="stPlotlyChart"] {{ height: 280px !important; }}
+    .js-plotly-plot, .plot-container .svg-container {{ height: 280px !important; }}
+
+    /* File uploader: keep dropzone inside viewport */
+    [data-testid="stFileUploader"] section {{ padding: 14px !important; }}
+    [data-testid="stFileUploaderDropzone"] {{ padding: 18px 12px !important; text-align: center; }}
+
+    /* Expander padding tighter */
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {{ padding: 10px !important; }}
+
+    /* Prevent page-wide horizontal scroll from stray wide children */
+    html, body, [data-testid="stAppViewContainer"] {{
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+    }}
+}}
+
+/* Very small phones */
+@media (max-width: 420px) {{
+    .ui-hero-title {{ font-size: 20px !important; }}
+    .ui-stat-value, [data-testid="stMarkdownContainer"] .ui-stat-value {{ font-size: 20px; }}
+    .ui-table thead th, .ui-table tbody td {{ padding: 8px 8px !important; font-size: 11px !important; }}
+    [data-testid="stPlotlyChart"] {{ height: 240px !important; }}
+    .js-plotly-plot, .plot-container .svg-container {{ height: 240px !important; }}
+}}
 """
 
 
