@@ -13,10 +13,10 @@ from src.paths import resolve_path
 from src.ui.logo import crystal_svg
 
 HOW_IT_WORKS = (
-    ("01", "Ingest", "Secure upload of raw CSV, JSON, or Excel."),
-    ("02", "Validate", "Automatic profiling, null checks, and scoring."),
-    ("03", "Quarantine", "Isolate invalid rows; keep only clean data."),
-    ("04", "Monitor", "Anomalies, schema drift, and quality trend graphs."),
+    ("01", "Ingest", "Load raw datasets CSV, JSON, or Excel securely after sign-in."),
+    ("02", "Validate", "Null checks, type-rules, and quality scoring."),
+    ("03", "Quarantine", "Isolate invalid rows; export only clean dataset."),
+    ("04", "Monitor", "Private run history and trend analytics per account."),
 )
 
 
