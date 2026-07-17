@@ -636,29 +636,34 @@ def _inputs() -> str:
     fill: none !important;
     stroke: currentColor !important;
 }}
-
-/* Select / dropdown — semantic text so Baseweb never paints white-on-white */
+/* purana block (line 640-662) hata ke ye daalo */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
-[data-testid="stSelectbox"] [data-baseweb="select"],
-[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
-    background: var(--ui-input) !important;
-    color: var(--ui-text) !important;
-}}
-[data-testid="stSelectbox"] [data-baseweb="select"] div,
-[data-testid="stSelectbox"] [data-baseweb="select"] span,
-[data-testid="stSelectbox"] [data-baseweb="select"] input,
-[data-testid="stSelectbox"] [data-baseweb="select"] [value],
-[data-testid="stSelectbox"] div[aria-live],
-[data-testid="stSelectbox"] div[aria-selected] {{
+[data-testid="stSelectbox"] * {{
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
     opacity: 1 !important;
-    caret-color: var(--ui-text) !important;
+}}
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div {{
+    background: var(--ui-input) !important;
 }}
 [data-testid="stSelectbox"] [data-baseweb="select"] svg {{
     color: var(--ui-text-3) !important;
     fill: var(--ui-text-3) !important;
     opacity: 1 !important;
+}}
+/* Dropdown popover (renders in a portal outside the select) */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] * {{
+    color: var(--ui-text) !important;
+    -webkit-text-fill-color: var(--ui-text) !important;
+}}
+div[data-baseweb="popover"] [role="option"] {{
+    background: var(--ui-elevated) !important;
+}}
+div[data-baseweb="popover"] [role="option"]:hover,
+div[data-baseweb="popover"] [aria-selected="true"] {{
+    background: var(--ui-accent-soft) !important;
 }}
 div[data-baseweb="popover"],
 [data-testid="stPopoverBody"] {{
@@ -1352,7 +1357,25 @@ def _tables() -> str:
     content: ""; width: 34px; height: 34px; margin-bottom: {SP[4]}px;
     background: url("data:image/svg+xml,{up_icon}") center/34px no-repeat;
 }}
-[data-testid="stFileUploaderDropzoneInstructions"] {{ color: var(--ui-text) !important; }}
+[data-testid="stFileUploaderDropzoneInstructions"] {{
+    color: var(--ui-text) !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}}
+[data-testid="stFileUploaderDropzoneInstructions"] > div,
+[data-testid="stFileUploaderDropzoneInstructions"] span,
+[data-testid="stFileUploaderDropzoneInstructions"] small {{
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}}
 [data-testid="stFileUploaderDropzoneInstructions"] span {{ font-size: {TYPE['body']}px !important; font-weight: 600 !important; color: var(--ui-text) !important; }}
 [data-testid="stFileUploaderDropzoneInstructions"] small {{ font-size: {TYPE['caption']}px !important; color: var(--ui-text-3) !important; }}
 [data-testid="stFileUploaderDropzone"] button {{
