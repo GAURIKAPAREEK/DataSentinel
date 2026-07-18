@@ -443,11 +443,15 @@ def request_password_reset(email: str) -> tuple[bool, str]:
     # Always return the same message to prevent email enumeration.
     generic_ok = "If this email is registered, you will receive a reset link shortly."
     if not found:
+        print(f"[AUTH] Reset requested for email '{email}' - NOT FOUND in database/config.")
         return True, generic_ok
 
+    print(f"[AUTH] Reset requested for email '{email}' - FOUND. Sending SMTP reset email...")
     sent, message = _smtp_send_reset_email(email, token)
     if not sent:
+        print(f"[AUTH] SMTP send failed: {message}")
         return False, message
+    print(f"[AUTH] SMTP send succeeded for '{email}'.")
     return True, generic_ok
 
 
