@@ -20,7 +20,7 @@ AUTH_CONFIG_PATH = resolve_path("config/auth_config.yaml")
 RESET_TOKEN_MINUTES = 15
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _get_db_engine():
     """Connect to the persistent Supabase/Postgres database, if configured."""
     try:
@@ -47,7 +47,7 @@ def _table_columns(conn, table_name: str) -> set[str]:
     return {row[0] for row in rows}
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def _ensure_users_table_once(_engine):
     """Run schema creation/migration only once per app process (not on every rerun)."""
     create_query = """
@@ -88,7 +88,7 @@ def _load_from_secrets():
     return None
 
 
-@st.cache_data(ttl=5)
+@st.cache_data(ttl=5, show_spinner=False)
 def _fetch_users_from_db(_engine) -> dict:
     with _engine.connect() as conn:
         rows = conn.execute(
