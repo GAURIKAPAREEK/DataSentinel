@@ -1,592 +1,305 @@
-import os
-import re
-import secrets
-import smtplib
-from datetime import datetime, timedelta, timezone
-from email.message import EmailMessage
-from urllib.parse import urlencode
+"""Authentication pages — unified layout for login, signup, forgot, reset."""
 
-import bcrypt
-import sqlalchemy
+from __future__ import annotations
+
 import streamlit as st
-import streamlit.components.v1 as components
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
 
-from src.paths import resolve_path
-
-AUTH_CONFIG_PATH = resolve_path("config/auth_config.yaml")
-RESET_TOKEN_MINUTES = 15
-
-
-@st.cache_resource
-def _get_db_engine():
-    """Connect to the persistent Supabase/Postgres database, if configured."""
-    try:
-        if hasattr(st, "secrets") and "database" in st.secrets:
-            db_url = st.secrets["database"]["url"]
-            return sqlalchemy.create_engine(db_url, pool_pre_ping=True)
-    except (FileNotFoundError, KeyError, TypeError):
-        pass
-    return None
+from src.auth import (
+    authenticate_user,
+    is_cloud_deployment,
+    load_auth_config,
+    register_user,
+    request_password_reset,
+    reset_password_with_token,
+    validate_signup_fields,
+)
+from src.ui.logo import brand_html, crystal_svg
+from src.ui_helpers import suppress_enter_hint
 
 
-def _table_columns(conn, table_name: str) -> set[str]:
-    dialect = conn.dialect.name
-    if dialect == "sqlite":
-        rows = conn.execute(sqlalchemy.text(f"PRAGMA table_info({table_name})")).fetchall()
-        return {row[1] for row in rows}
-    rows = conn.execute(
-        sqlalchemy.text(
-            "SELECT column_name FROM information_schema.columns "
-            "WHERE table_name = :table"
-        ),
-        {"table": table_name},
-    ).fetchall()
-    return {row[0] for row in rows}
+def _page() -> str:
+    if st.query_params.get("reset_token"):
+        return "reset"
+    return st.session_state.get("auth_page", "login")
 
 
-def _ensure_users_table(engine):
-    create_query = """
-    CREATE TABLE IF NOT EXISTS users (
-        username TEXT PRIMARY KEY,
-        name TEXT,
-        email TEXT,
-        password TEXT
+def _goto(page: str) -> None:
+    st.session_state["auth_page"] = page
+    if page != "reset":
+        st.query_params.clear()
+
+
+def _head(title: str, subtitle: str) -> None:
+    st.markdown(
+        f'<div class="ui-auth-card-head"><h2>{title}</h2><p>{subtitle}</p></div>',
+        unsafe_allow_html=True,
     )
-    """
-    with engine.connect() as conn:
-        conn.execute(sqlalchemy.text(create_query))
-        conn.commit()
-        columns = _table_columns(conn, "users")
-        if "reset_token" not in columns:
-            conn.execute(sqlalchemy.text("ALTER TABLE users ADD COLUMN reset_token TEXT"))
-        if "reset_expiry" not in columns:
-            conn.execute(sqlalchemy.text("ALTER TABLE users ADD COLUMN reset_expiry TEXT"))
-        conn.commit()
 
 
-def _load_from_secrets():
-    """Legacy: static credentials block in secrets (kept for backward compatibility)."""
-    try:
-        if hasattr(st, "secrets") and "auth" in st.secrets:
-            auth = st.secrets["auth"]
-            return {
-                "credentials": dict(auth["credentials"]),
-                "cookie": dict(auth["cookie"]),
-            }
-    except (FileNotFoundError, KeyError, TypeError):
-        pass
-    return None
+def _error(msg: str) -> None:
+    st.markdown(f'<p class="ui-field-error" role="alert">{msg}</p>', unsafe_allow_html=True)
 
 
-def load_auth_config():
-    """Load auth from the database if configured, else local YAML or secrets."""
-    engine = _get_db_engine()
-    if engine is not None:
-        _ensure_users_table(engine)
-        with engine.connect() as conn:
-            rows = conn.execute(
-                sqlalchemy.text("SELECT username, name, email, password FROM users")
-            ).fetchall()
-        usernames = {
-            row[0]: {"name": row[1], "email": row[2], "password": row[3]}
-            for row in rows
-        }
-        return {
-            "credentials": {"usernames": usernames},
-            "cookie": {
-                "name": "datasentinel_auth",
-                "key": "datasentinel_secret_key_change_this",
-                "expiry_days": 7,
-            },
-        }
+def _login() -> None:
+    if st.session_state.pop("show_password_changed_toast", False):
+        st.toast("Password changed successfully! ✅", icon="✅")
+    _head("Welcome back", "Sign in to your workspace to continue.")
+    suppress_enter_hint()
+    username = st.text_input("Username", key="login_username", placeholder="your_username")
+    password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+    remember, forgot = st.columns([1.6, 1], vertical_alignment="center")
+    with remember:
+        st.checkbox("Remember me", key="login_remember", value=True)
+    with forgot:
+        if st.button("Forgot password?", key="ui_forgot_link", type="secondary"):
+            _goto("forgot")
+            st.rerun()
+    loading = st.session_state.get("auth_loading", False)
+    if st.button("Signing in…" if loading else "Sign in", key="login_submit", type="primary", use_container_width=True, disabled=loading):
+        if not username.strip() or not password:
+            st.session_state["auth_error"] = "Enter your username and password."
+        else:
+            st.session_state["auth_loading"] = True
+            st.session_state.pop("auth_error", None)
+            st.session_state.pop("_auth_paint_done", None)
+            st.rerun()
 
-    secrets_config = _load_from_secrets()
-    if secrets_config is not None:
-        return secrets_config
-
-    os.makedirs(os.path.dirname(AUTH_CONFIG_PATH), exist_ok=True)
-    if not os.path.exists(AUTH_CONFIG_PATH):
-        default_config = {
-            "credentials": {"usernames": {}},
-            "cookie": {
-                "name": "datasentinel_auth",
-                "key": "datasentinel_secret_key_change_this",
-                "expiry_days": 7,
-            },
-        }
-        with open(AUTH_CONFIG_PATH, "w") as f:
-            yaml.dump(default_config, f)
-
-    with open(AUTH_CONFIG_PATH) as f:
-        config = yaml.load(f, Loader=SafeLoader)
-    return config
+    if st.session_state.get("auth_error"):
+        _error(st.session_state["auth_error"])
+    if st.session_state.pop("signup_success", None):
+        st.success("Account created. Sign in with your credentials.")
+    if st.button("Create an account", key="goto_signup", type="secondary", use_container_width=True, disabled=loading):
+        _goto("signup")
+        st.rerun()
 
 
-def save_auth_config(config):
-    """Only used for the local-YAML fallback path; DB writes happen in register_user."""
-    if _get_db_engine() is not None:
-        return True
-    if _load_from_secrets() is not None:
-        return False
-    with open(AUTH_CONFIG_PATH, "w") as f:
-        yaml.dump(config, f, default_flow_style=False)
-    return True
+def _finish_login_if_pending() -> None:
+    """Verify credentials after the loading veil has already been painted."""
+    if not st.session_state.get("auth_loading"):
+        return
+    if st.session_state.get("authentication_status"):
+        st.session_state["auth_loading"] = False
+        st.session_state.pop("_auth_paint_done", None)
+        return
+    if _page() != "login":
+        st.session_state["auth_loading"] = False
+        st.session_state.pop("_auth_paint_done", None)
+        return
 
-
-def is_cloud_deployment():
-    return _load_from_secrets() is not None
-
-
-def hash_password(plain_password: str) -> str:
-    """Hash password with bcrypt (compatible with streamlit-authenticator)."""
-    return bcrypt.hashpw(plain_password.encode(), bcrypt.gensalt()).decode()
-
-
-def _username_exists(username: str) -> bool:
-    engine = _get_db_engine()
-    if engine is not None:
-        with engine.connect() as conn:
-            existing = conn.execute(
-                sqlalchemy.text("SELECT 1 FROM users WHERE username = :u"),
-                {"u": username},
-            ).fetchone()
-        return existing is not None
-    config = load_auth_config()
-    return username in config["credentials"]["usernames"]
-
-
-def register_user(
-    name: str,
-    email: str,
-    username: str,
-    password: str,
-) -> tuple[bool, str]:
-    """Validate and persist a new account (to the database if configured, else local YAML)."""
-    name = (name or "").strip()
-    email = (email or "").strip()
-    username = (username or "").strip()
-    password = password or ""
-
-    if not all([name, email, username, password]):
-        return False, "All fields are required."
-
-    if not re.fullmatch(r"[A-Za-z ]+", name):
-        return False, "Full name can only contain alphabets."
-
-    if len(username) < 3:
-        return False, "Username must be at least 3 characters."
-    if not re.fullmatch(r"[A-Za-z0-9_]+", username):
-        return False, "Username can only contain letters, numbers, and underscores."
-
-    if len(password) < 6:
-        return False, "Password must be at least 6 characters."
-    if not re.search(r"\d", password) or not re.search(
-        r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]", password
-    ):
-        return False, "Password must contain at least one number and one special symbol."
-
-    if "@" not in email or "." not in email.split("@")[-1]:
-        return False, "Enter a valid email address."
-
-    if _username_exists(username):
-        return False, "Username already exists. Choose another or sign in."
-
-    hashed = hash_password(password)
-    engine = _get_db_engine()
-    if engine is not None:
-        _ensure_users_table(engine)
-        with engine.connect() as conn:
-            conn.execute(
-                sqlalchemy.text(
-                    "INSERT INTO users (username, name, email, password) VALUES (:u, :n, :e, :p)"
-                ),
-                {"u": username, "n": name, "e": email, "p": hashed},
-            )
-            conn.commit()
-        return True, "Account created. Sign in with your username and password."
-
-    config = load_auth_config()
-    usernames = config["credentials"]["usernames"]
-    usernames[username] = {"name": name, "email": email, "password": hashed}
-    if save_auth_config(config):
-        return True, "Account created. Sign in with your username and password."
-    return False, "Could not save account. Contact your administrator."
-
-
-def get_authenticator():
-    config = load_auth_config()
-    authenticator = stauth.Authenticate(
-        config["credentials"],
-        config["cookie"]["name"],
-        config["cookie"]["key"],
-        config["cookie"]["expiry_days"],
-    )
-    return authenticator, config
-
-
-def validate_signup_fields(name: str, email: str, username: str, password: str) -> dict:
-    """Live validation for signup fields."""
-    errors = {}
-    name = (name or "").strip()
-    email = (email or "").strip()
-    username = (username or "").strip()
-    password = password or ""
-
-    if name and not re.fullmatch(r"[A-Za-z ]+", name):
-        errors["name"] = "Full name can only contain alphabets."
-
-    if username:
-        if len(username) < 3:
-            errors["username"] = "Username must be at least 3 characters."
-        elif not re.fullmatch(r"[A-Za-z0-9_]+", username):
-            errors["username"] = "Username can only contain letters, numbers, and underscores."
-        elif _username_exists(username):
-            errors["username"] = "Username already exists. Choose another or sign in."
-
-    if password:
-        if len(password) < 6:
-            errors["password"] = "Password must be at least 6 characters."
-        elif not re.search(r"\d", password) or not re.search(
-            r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]", password
-        ):
-            errors["password"] = "Password must contain at least one number and one special symbol."
-
-    if email and ("@" not in email or "." not in email.split("@")[-1]):
-        errors["email"] = "Enter a valid email address."
-
-    return errors
-
-
-def authenticate_user(username: str, password: str) -> tuple[bool, str]:
-    """Authenticate with a fresh config load to avoid stale credentials after signup."""
-    username = (username or "").strip()
-    if not username or not password:
-        return False, "Enter your username and password."
-
-    config = load_auth_config()
-    usernames = config["credentials"]["usernames"]
-    user_record = usernames.get(username)
-    if not user_record:
-        return False, "Invalid username or password."
-
-    stored_hash = user_record.get("password") or ""
-    if isinstance(stored_hash, str) and stored_hash.startswith("$2"):
-        try:
-            valid = bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
-        except (ValueError, TypeError):
-            valid = False
-    else:
-        valid = False
-
-    if not valid:
-        return False, "Invalid username or password."
-    return True, user_record.get("name") or username
-
-
-def logout_user() -> None:
-    """Clear session state and return to login (unified with custom auth)."""
-    keys_to_clear = [
-        "authentication_status",
-        "name",
-        "username",
-        "email",
-        "auth_error",
-        "auth_loading",
-        "auth_page",
-        "forgot_success",
-        "reset_success",
-        "signup_success",
-        "_workspace_hydrated",
-        "_auth_paint_done",
-        "app_page",
-    ]
-    for key in keys_to_clear:
-        st.session_state.pop(key, None)
-    st.query_params.clear()
+    pending_user = (st.session_state.get("login_username") or "").strip()
+    pending_pw = st.session_state.get("login_password") or ""
+    ok, value = authenticate_user(pending_user, pending_pw)
+    st.session_state["auth_loading"] = False
+    st.session_state.pop("_auth_paint_done", None)
+    if ok:
+        st.session_state.update({
+            "authentication_status": True,
+            "name": value,
+            "username": pending_user,
+            "email": load_auth_config().get("credentials", {}).get("usernames", {}).get(pending_user, {}).get("email", ""),
+            "app_page": "dashboard",
+            "_workspace_hydrated": False,
+        })
+        st.session_state.pop("auth_error", None)
+        st.rerun()
+    st.session_state["auth_error"] = value
     st.rerun()
 
 
-def _app_base_url() -> str:
-    try:
-        if hasattr(st, "secrets") and "smtp" in st.secrets:
-            return st.secrets["smtp"].get("app_url", "http://localhost:8501").rstrip("/")
-    except (FileNotFoundError, KeyError, TypeError):
-        pass
-    return "http://localhost:8501"
+def _signup() -> None:
+    _head("Create your account", "Start monitoring data quality in minutes.")
+    suppress_enter_hint()
+    if is_cloud_deployment():
+        st.info("Account creation is managed by your administrator.")
+        if st.button("Back to sign in", key="signup_back_cloud", use_container_width=True):
+            _goto("login")
+            st.rerun()
+        return
+
+    val_name = st.session_state.get("signup_name", "")
+    val_email = st.session_state.get("signup_email", "")
+    val_username = st.session_state.get("signup_username", "")
+    val_password = st.session_state.get("signup_password", "")
+    errors = validate_signup_fields(val_name, val_email, val_username, val_password)
+
+    name = st.text_input("Full name", key="signup_name", placeholder="Jane Doe")
+    if val_name and "name" in errors:
+        _error(errors["name"])
+
+    email = st.text_input("Email", key="signup_email", placeholder="you@company.com")
+    if val_email and "email" in errors:
+        _error(errors["email"])
+
+    username = st.text_input("Username", key="signup_username", placeholder="jane_doe")
+    if val_username and "username" in errors:
+        _error(errors["username"])
+
+    password = st.text_input("Password", type="password", key="signup_password", placeholder="8+ chars, number & symbol")
+    if val_password and "password" in errors:
+        _error(errors["password"])
+
+    loading = st.session_state.get("auth_loading", False)
+    submit_disabled = loading or bool(errors) or not (val_name.strip() and val_email.strip() and val_username.strip() and val_password)
+
+    if st.button("Creating account…" if loading else "Create account", key="signup_submit", type="primary", use_container_width=True, disabled=submit_disabled):
+        st.session_state["auth_loading"] = True
+        ok, message = register_user(name, email, username, password)
+        st.session_state["auth_loading"] = False
+        if ok:
+            st.session_state["signup_success"] = True
+            _goto("login")
+            st.rerun()
+        st.session_state["auth_error"] = message
+    if st.session_state.get("auth_error") and _page() == "signup":
+        _error(st.session_state["auth_error"])
+    if st.button("Already have an account? Sign in", key="goto_login", type="secondary", use_container_width=True):
+        st.session_state.pop("auth_error", None)
+        _goto("login")
+        st.rerun()
 
 
-def _build_reset_link(token: str) -> str:
-    base = _app_base_url()
-    query = urlencode({"reset_token": token})
-    return f"{base}/?{query}"
-
-
-def _reset_email_html(reset_link: str) -> str:
-    from src.logo import logo_email_html
-
-    logo_block = logo_email_html(48)
-    return f"""<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:520px;background:#FFFFFF;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
-        <tr><td style="padding:32px 32px 16px;text-align:center;">
-          <div style="margin-bottom:16px;">{logo_block}</div>
-          <div style="font-size:18px;font-weight:700;color:#0F172A;letter-spacing:-0.02em;">DataSentinel</div>
-          <h1 style="margin:24px 0 8px;font-size:24px;color:#0F172A;">Reset your password</h1>
-          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#64748B;">
-            We received a request to reset your password. Click the button below to choose a new one.
-            This link expires in {RESET_TOKEN_MINUTES} minutes.
-          </p>
-          <a href="{reset_link}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#5B5CEB,#8B5CF6);color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px;">
-            Reset password
-          </a>
-          <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#94A3B8;">
-            If you did not request this, you can safely ignore this email.
-          </p>
-        </td></tr>
-        <tr><td style="padding:16px 32px 32px;border-top:1px solid #E2E8F0;">
-          <p style="margin:0;font-size:12px;color:#94A3B8;text-align:center;">DataSentinel · Enterprise data quality</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>"""
-
-
-def _password_changed_email_html() -> str:
-    from src.logo import logo_email_html
-
-    logo_block = logo_email_html(48)
-    return f"""<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:520px;background:#FFFFFF;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
-        <tr><td style="padding:32px 32px 16px;text-align:center;">
-          <div style="margin-bottom:16px;">{logo_block}</div>
-          <div style="font-size:18px;font-weight:700;color:#0F172A;letter-spacing:-0.02em;">DataSentinel</div>
-          <h1 style="margin:24px 0 8px;font-size:24px;color:#0F172A;">Password updated successfully</h1>
-          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#64748B;">
-            Your DataSentinel account password was just changed. You can now sign in
-            with your new password.
-          </p>
-          <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#94A3B8;">
-            If you did not make this change, please contact your administrator immediately.
-          </p>
-        </td></tr>
-        <tr><td style="padding:16px 32px 32px;border-top:1px solid #E2E8F0;">
-          <p style="margin:0;font-size:12px;color:#94A3B8;text-align:center;">DataSentinel · Enterprise data quality</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>"""
-
-
-def _smtp_send_password_changed_email(to_email: str) -> None:
-    """Best-effort confirmation email; never blocks the password-reset flow."""
-    try:
-        if not hasattr(st, "secrets") or "smtp" not in st.secrets or not to_email:
-            return
-        smtp_cfg = st.secrets["smtp"]
-        host = smtp_cfg["host"]
-        port = int(smtp_cfg.get("port", 587))
-        username = smtp_cfg["username"]
-        password = smtp_cfg["password"]
-        sender = smtp_cfg.get("sender_email", username)
-
-        msg = EmailMessage()
-        msg["Subject"] = "Your DataSentinel password was changed"
-        msg["From"] = sender
-        msg["To"] = to_email
-        msg.set_content(
-            "Your DataSentinel account password was just changed. "
-            "You can now sign in with your new password.\n\n"
-            "If you did not make this change, contact your administrator immediately."
-        )
-        msg.add_alternative(_password_changed_email_html(), subtype="html")
-
-        if port == 465:
-            with smtplib.SMTP_SSL(host, port, timeout=20) as server:
-                server.login(username, password)
-                server.send_message(msg)
+def _forgot() -> None:
+    _head("Reset your password", "We'll email you a secure link to choose a new password.")
+    suppress_enter_hint()
+    email = st.text_input("Registered email", key="forgot_email", placeholder="you@company.com")
+    loading = st.session_state.get("auth_loading", False)
+    if st.button("Sending…" if loading else "Send reset link", key="forgot_submit", type="primary", use_container_width=True, disabled=loading):
+        st.session_state["auth_loading"] = True
+        ok, message = request_password_reset(email)
+        st.session_state["auth_loading"] = False
+        if ok:
+            st.session_state["forgot_success"] = message
+            st.session_state.pop("auth_error", None)
         else:
-            with smtplib.SMTP(host, port, timeout=20) as server:
-                server.starttls()
-                server.login(username, password)
-                server.send_message(msg)
-        print(f"[AUTH] Password-changed confirmation email sent to '{to_email}'.")
-    except Exception:
-        import traceback
-        print("SMTP Error sending password-changed confirmation email:")
-        traceback.print_exc()
+            st.session_state["auth_error"] = message
+    if st.session_state.get("forgot_success"):
+        st.success(st.session_state["forgot_success"])
+    if st.session_state.get("auth_error") and _page() == "forgot":
+        _error(st.session_state["auth_error"])
+    if st.button("← Back to sign in", key="forgot_back", type="secondary", use_container_width=True):
+        st.session_state.pop("auth_error", None)
+        st.session_state.pop("forgot_success", None)
+        _goto("login")
+        st.rerun()
 
 
-def _smtp_send_reset_email(to_email: str, token: str) -> tuple[bool, str]:
-    try:
-        if not hasattr(st, "secrets") or "smtp" not in st.secrets:
-            return False, "Email is not configured. Contact your administrator."
-        smtp_cfg = st.secrets["smtp"]
-        host = smtp_cfg["host"]
-        port = int(smtp_cfg.get("port", 587))
-        username = smtp_cfg["username"]
-        password = smtp_cfg["password"]
-        sender = smtp_cfg.get("sender_email", username)
-        reset_link = _build_reset_link(token)
-
-        msg = EmailMessage()
-        msg["Subject"] = "Reset your DataSentinel password"
-        msg["From"] = sender
-        msg["To"] = to_email
-        msg.set_content(
-            f"Reset your DataSentinel password using this link (expires in {RESET_TOKEN_MINUTES} minutes):\n\n"
-            f"{reset_link}\n\n"
-            "If you did not request this, ignore this email."
-        )
-        msg.add_alternative(_reset_email_html(reset_link), subtype="html")
-
-        if port == 465:
-            with smtplib.SMTP_SSL(host, port, timeout=20) as server:
-                server.login(username, password)
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(host, port, timeout=20) as server:
-                server.starttls()
-                server.login(username, password)
-                server.send_message(msg)
-        return True, "Password reset email sent."
-    except Exception as e:
-        import traceback
-        print("SMTP Error sending password reset email:")
-        traceback.print_exc()
-        return False, "Could not send reset email. Try again later."
-
-
-def _store_reset_token(email: str, token: str, expiry: str) -> bool:
-    engine = _get_db_engine()
-    if engine is not None:
-        _ensure_users_table(engine)
-        with engine.connect() as conn:
-            row = conn.execute(
-                sqlalchemy.text("SELECT username FROM users WHERE lower(email) = lower(:e)"),
-                {"e": email},
-            ).fetchone()
-            if not row:
-                return False
-            conn.execute(
-                sqlalchemy.text(
-                    "UPDATE users SET reset_token = :t, reset_expiry = :x WHERE lower(email) = lower(:e)"
-                ),
-                {"t": token, "x": expiry, "e": email},
-            )
-            conn.commit()
-        return True
-
-    config = load_auth_config()
-    for uname, data in config["credentials"]["usernames"].items():
-        if (data.get("email") or "").strip().lower() == email.lower():
-            data["reset_token"] = token
-            data["reset_expiry"] = expiry
-            return save_auth_config(config)
-    return False
-
-
-def request_password_reset(email: str) -> tuple[bool, str]:
-    email = (email or "").strip()
-    if not email:
-        return False, "Enter your registered email."
-    if "@" not in email or "." not in email.split("@")[-1]:
-        return False, "Enter a valid email address."
-
-    token = secrets.token_urlsafe(32)
-    expiry = (datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_MINUTES)).isoformat()
-    found = _store_reset_token(email, token, expiry)
-
-    # Always return the same message to prevent email enumeration.
-    generic_ok = "If this email is registered, you will receive a reset link shortly."
-    if not found:
-        print(f"[AUTH] Reset requested for email '{email}' - NOT FOUND in database/config.")
-        return True, generic_ok
-
-    print(f"[AUTH] Reset requested for email '{email}' - FOUND. Sending SMTP reset email...")
-    sent, message = _smtp_send_reset_email(email, token)
-    if not sent:
-        print(f"[AUTH] SMTP send failed: {message}")
-        return False, message
-    print(f"[AUTH] SMTP send succeeded for '{email}'.")
-    return True, generic_ok
-
-
-def reset_password_with_token(token: str, new_password: str) -> tuple[bool, str]:
-    token = (token or "").strip()
+def _reset() -> None:
+    token = st.query_params.get("reset_token", "")
+    _head("Choose a new password", "Enter a strong password for your account.")
     if not token:
-        return False, "Invalid reset link."
-    if len(new_password or "") < 6:
-        return False, "Password must be at least 6 characters."
-    if not re.search(r"\d", new_password) or not re.search(
-        r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]", new_password
-    ):
-        return False, "Password must include at least one number and one special symbol."
+        st.error("Invalid or missing reset link.")
+        if st.button("Back to sign in", key="reset_invalid_back", use_container_width=True):
+            st.query_params.clear()
+            _goto("login")
+            st.rerun()
+        return
+    pw = st.text_input("New password", type="password", key="reset_password", placeholder="••••••••")
+    confirm = st.text_input("Confirm password", type="password", key="reset_confirm", placeholder="••••••••")
+    if confirm and pw != confirm:
+        _error("Passwords do not match.")
+    loading = st.session_state.get("auth_loading", False)
+    if st.button("Updating…" if loading else "Update password", key="reset_submit", type="primary", use_container_width=True, disabled=loading):
+        if pw != confirm:
+            st.session_state["auth_error"] = "Passwords do not match."
+        else:
+            st.session_state["auth_loading"] = True
+            ok, message = reset_password_with_token(token, pw)
+            st.session_state["auth_loading"] = False
+            if ok:
+                st.session_state["reset_success"] = True
+                st.session_state.pop("auth_error", None)
+            else:
+                st.session_state["auth_error"] = message
+    if st.session_state.get("auth_error") and _page() == "reset":
+        _error(st.session_state["auth_error"])
+    if st.session_state.get("reset_success"):
+        st.success("Password updated. Sign in with your new password.")
+        st.session_state["show_password_changed_toast"] = True
+        st.query_params.clear()
+        st.session_state.pop("reset_success", None)
+        _goto("login")
+        st.rerun()
+    if st.button("← Back to sign in", key="reset_back", type="secondary", use_container_width=True):
+        st.query_params.clear()
+        _goto("login")
+        st.rerun()
 
-    now = datetime.now(timezone.utc)
-    engine = _get_db_engine()
-    if engine is not None:
-        _ensure_users_table(engine)
-        with engine.connect() as conn:
-            row = conn.execute(
-                sqlalchemy.text(
-                    "SELECT username, email, reset_expiry FROM users WHERE reset_token = :t"
-                ),
-                {"t": token},
-            ).fetchone()
-            if not row:
-                return False, "This reset link is invalid or has already been used."
-            expiry_raw = row[2]
-            if not expiry_raw:
-                return False, "This reset link has expired. Request a new one."
-            expiry = datetime.fromisoformat(expiry_raw.replace("Z", "+00:00"))
-            if expiry.tzinfo is None:
-                expiry = expiry.replace(tzinfo=timezone.utc)
-            if expiry < now:
-                return False, "This reset link has expired. Request a new one."
-            conn.execute(
-                sqlalchemy.text(
-                    "UPDATE users SET password = :p, reset_token = NULL, reset_expiry = NULL "
-                    "WHERE username = :u"
-                ),
-                {"p": hash_password(new_password), "u": row[0]},
-            )
-            conn.commit()
-        _smtp_send_password_changed_email(row[1])
-        return True, "Password updated successfully."
 
-    config = load_auth_config()
-    for uname, data in config["credentials"]["usernames"].items():
-        if data.get("reset_token") != token:
-            continue
-        expiry_raw = data.get("reset_expiry")
-        if not expiry_raw:
-            return False, "This reset link has expired. Request a new one."
-        expiry = datetime.fromisoformat(expiry_raw.replace("Z", "+00:00"))
-        if expiry.tzinfo is None:
-            expiry = expiry.replace(tzinfo=timezone.utc)
-        if expiry < now:
-            return False, "This reset link has expired. Request a new one."
-        data["password"] = hash_password(new_password)
-        data.pop("reset_token", None)
-        data.pop("reset_expiry", None)
-        if save_auth_config(config):
-            _smtp_send_password_changed_email(data.get("email", ""))
-            return True, "Password updated successfully."
-        return False, "Could not update password."
-    return False, "This reset link is invalid or has already been used."
+def _brand_panel() -> None:
+    st.markdown(
+        f"""
+<div class="ui-auth-brand">
+  <div class="ui-auth-brand-logo ui-auth-enter ui-auth-enter--1">{brand_html("md", animated=True, glow=True, light_text=True)}</div>
+  <h1 class="ui-auth-headline ui-auth-enter ui-auth-enter--2">Turning Every Dataset into a Trusted Asset.</h1>
+  <p class="ui-auth-lede ui-auth-enter ui-auth-enter--3">
+    DataSentinel automates validation, profiling, and anomaly detection — turning raw files 
+    into clean, trusted data in minutes.
+  </p>
+
+  <div class="ui-auth-features" role="list">
+    <div class="ui-auth-feat ui-auth-enter ui-auth-enter--5" role="listitem">
+      <strong>Ingest</strong>
+      <span>Load datasets securely after sign-in.</span>
+    </div>
+    <div class="ui-auth-feat ui-auth-enter ui-auth-enter--6" role="listitem">
+      <strong>Validate</strong>
+      <span>Null checks, type rules &amp; scoring.</span>
+    </div>
+    <div class="ui-auth-feat ui-auth-enter ui-auth-enter--7" role="listitem">
+      <strong>Quarantine</strong>
+      <span>Isolate bad rows; export clean file.</span>
+    </div>
+    <div class="ui-auth-feat ui-auth-enter ui-auth-enter--8" role="listitem">
+      <strong>Monitor</strong>
+      <span>Private run history &amp; trend analytics.</span>
+    </div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
+def render_auth_page() -> None:
+    st.markdown(
+        '<div class="ui-auth-anchor" aria-hidden="true"></div>'
+        '<div class="ui-auth-texture" aria-hidden="true"></div>',
+        unsafe_allow_html=True,
+    )
+
+    left, right = st.columns([1.08, 1], gap="large", vertical_alignment="center")
+    with left:
+        _brand_panel()
+    with right:
+        st.markdown('<div class="ui-auth-form-shell">', unsafe_allow_html=True)
+        page = _page()
+        if page == "login":
+            _login()
+        elif page == "signup":
+            _signup()
+        elif page == "forgot":
+            _forgot()
+        else:
+            _reset()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if st.session_state.get("auth_loading"):
+        st.markdown(
+            f'<div class="ui-loading" role="status"><div class="ui-loading-card">'
+            f'{crystal_svg("xl", animated=True, glow=True)}'
+            f'<p style="margin:0;color:var(--ui-text-2)">Signing you in…</p></div></div>',
+            unsafe_allow_html=True,
+        )
+        # First loading pass only paints the veil; auth runs on the following pass
+        # so the previous frame stays covered during password verification.
+        if not st.session_state.get("_auth_paint_done"):
+            st.session_state["_auth_paint_done"] = True
+            st.rerun()
+        _finish_login_if_pending()
+    st.markdown(
+        '<div class="ui-auth-foot">DataSentinel · Enterprise data quality platform</div>',
+        unsafe_allow_html=True,
+    )
+    from src.app_shell import inject_css
+
+    inject_css(login=True)
