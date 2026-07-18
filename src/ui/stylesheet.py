@@ -1265,6 +1265,123 @@ def _dashboard() -> str:
     border: 1px solid var(--ui-border) !important;
     border-radius: {r}px !important;
     background: var(--ui-card) !important;
+    box-shadow: var(--ui-shadow-sm) !important;
+    overflow: hidden !important;
+}}
+[data-testid="stExpander"] details {{
+    background: var(--ui-card) !important;
+    border: none !important;
+    border-radius: {r}px !important;
+}}
+[data-testid="stExpander"] summary {{
+    background: var(--ui-surface) !important;
+    color: var(--ui-text) !important;
+    padding: {SP[12]}px {SP[16]}px !important;
+    border: none !important;
+    border-bottom: 1px solid var(--ui-border) !important;
+    transition: background {DURATION} {EASING}, color {DURATION} {EASING} !important;
+}}
+[data-testid="stExpander"] summary:hover {{
+    background: var(--ui-muted) !important;
+    color: var(--ui-primary) !important;
+}}
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span,
+[data-testid="stExpander"] summary div,
+[data-testid="stExpander"] summary svg,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"] p,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"] span,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"] svg {{
+    color: var(--ui-text) !important;
+    fill: var(--ui-text) !important;
+}}
+[data-testid="stExpander"] summary:hover p,
+[data-testid="stExpander"] summary:hover span,
+[data-testid="stExpander"] summary:hover svg,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"]:hover p,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"]:hover span,
+[data-testid="stExpander"] [data-testid="stExpanderHeader"]:hover svg {{
+    color: var(--ui-primary) !important;
+    fill: var(--ui-primary) !important;
+}}
+[data-testid="stExpander"] [data-testid="stExpanderDetails"] {{
+    background: var(--ui-card) !important;
+    padding: {SP[16]}px !important;
+}}
+
+/* Delete Account Popover (Desktop) Styles */
+div[class*="st-key-hdr_delete_account_btn"] {{
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-top: 16px !important;
+}}
+div[class*="st-key-hdr_delete_account_btn"] button {{
+    width: auto !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 14px !important;
+    font-size: 11px !important;
+    background: var(--ui-gradient) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: var(--ui-shadow-sm) !important;
+    font-weight: 600 !important;
+    transition: transform {DURATION} {EASING}, opacity {DURATION} {EASING} !important;
+}}
+div[class*="st-key-hdr_delete_account_btn"] button:hover {{
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+}}
+div[class*="st-key-confirm_delete_desktop_btn"],
+div[class*="st-key-cancel_delete_desktop_btn"],
+div[class*="st-key-confirm_delete_mobile_btn"],
+div[class*="st-key-cancel_delete_mobile_btn"] {{
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+}}
+div[class*="st-key-confirm_delete_desktop_btn"] button,
+div[class*="st-key-confirm_delete_mobile_btn"] button {{
+    width: 100% !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    background: var(--ui-surface) !important;
+    color: var(--ui-danger) !important;
+    border: 1px solid var(--ui-danger) !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+}}
+div[class*="st-key-confirm_delete_desktop_btn"] button p,
+div[class*="st-key-confirm_delete_desktop_btn"] button span,
+div[class*="st-key-confirm_delete_mobile_btn"] button p,
+div[class*="st-key-confirm_delete_mobile_btn"] button span {{
+    color: var(--ui-danger) !important;
+}}
+div[class*="st-key-cancel_delete_desktop_btn"] button,
+div[class*="st-key-cancel_delete_mobile_btn"] button {{
+    width: 100% !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 6px !important;
+    font-size: 11px !important;
+    background: var(--ui-surface) !important;
+    color: var(--ui-text) !important;
+    border: 1px solid var(--ui-border) !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+}}
+div[class*="st-key-cancel_delete_desktop_btn"] button p,
+div[class*="st-key-cancel_delete_desktop_btn"] button span,
+div[class*="st-key-cancel_delete_mobile_btn"] button p,
+div[class*="st-key-cancel_delete_mobile_btn"] button span {{
+    color: var(--ui-text) !important;
 }}
 [data-testid="stAlert"] {{ margin: {SP[12]}px 0 !important; }}
 [data-testid="stDownloadButton"] {{ margin-top: {SP[8]}px !important; }}
