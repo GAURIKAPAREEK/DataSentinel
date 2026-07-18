@@ -46,7 +46,7 @@ def _error(msg: str) -> None:
 
 def _login() -> None:
     if st.session_state.pop("show_password_changed_toast", False):
-        st.toast("Password changed successfully! ✅", icon="✅")
+        st.toast("Password changed successfully!")
     _head("Welcome back", "Sign in to your workspace to continue.")
     suppress_enter_hint()
     username = st.text_input("Username", key="login_username", placeholder="your_username")
