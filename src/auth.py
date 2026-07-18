@@ -383,13 +383,21 @@ def _smtp_send_reset_email(to_email: str, token: str) -> tuple[bool, str]:
         )
         msg.add_alternative(_reset_email_html(reset_link), subtype="html")
 
-        with smtplib.SMTP(host, port, timeout=20) as server:
-            server.starttls()
-            server.login(username, password)
-            server.send_message(msg)
+        if port == 465:
+            with smtplib.SMTP_SSL(host, port, timeout=20) as server:
+                server.login(username, password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(host, port, timeout=20) as server:
+                server.starttls()
+                server.login(username, password)
+                server.send_message(msg)
         return True, "Password reset email sent."
-    except Exception:
-        return False, "Could not send reset email. Try again later."
+    except Exception as e:
+        import traceback
+        print("SMTP Error sending password reset email:")
+        traceback.print_exc()
+        return False, f"Could not send reset email: {str(e)}"
 
 
 def _store_reset_token(email: str, token: str, expiry: str) -> bool:
