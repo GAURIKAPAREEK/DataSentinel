@@ -1,3 +1,7 @@
+# ============================================================
+# SAVE THIS FILE AS: src/ui/components/auth.py
+# (the UI pages file — login/signup/forgot/reset screens)
+# ============================================================
 """Authentication pages — unified layout for login, signup, forgot, reset."""
 
 from __future__ import annotations
