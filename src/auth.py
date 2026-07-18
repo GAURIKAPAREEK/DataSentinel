@@ -218,12 +218,14 @@ def register_user(
                 {"u": username, "n": name, "e": email, "p": hashed},
             )
             conn.commit()
+        _smtp_send_welcome_email(email, name, username)
         return True, "Account created. Sign in with your username and password."
 
     config = load_auth_config()
     usernames = config["credentials"]["usernames"]
     usernames[username] = {"name": name, "email": email, "password": hashed}
     if save_auth_config(config):
+        _smtp_send_welcome_email(email, name, username)
         return True, "Account created. Sign in with your username and password."
     return False, "Could not save account. Contact your administrator."
 
@@ -403,6 +405,83 @@ def _password_changed_email_html() -> str:
   </table>
 </body>
 </html>"""
+
+
+def _welcome_email_html(name: str, username: str) -> str:
+    import html
+    from src.logo import logo_email_html
+
+    logo_block = logo_email_html(48)
+    return f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:520px;background:#FFFFFF;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
+        <tr><td style="padding:32px 32px 16px;text-align:center;">
+          <div style="margin-bottom:16px;">{logo_block}</div>
+          <div style="font-size:18px;font-weight:700;color:#0F172A;letter-spacing:-0.02em;">DataSentinel</div>
+          <h1 style="margin:24px 0 8px;font-size:24px;color:#0F172A;">Welcome to DataSentinel!</h1>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#64748B;text-align:left;">
+            Hi {html.escape(name)},
+          </p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#64748B;text-align:left;">
+            Your account has been successfully created. You can now log in using your username: <strong>@{html.escape(username)}</strong>.
+          </p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#64748B;text-align:left;">
+            DataSentinel helps you validate and monitor dataset quality, track quality scoring, and isolate critical violations automatically.
+          </p>
+          <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#94A3B8;">
+            If you did not sign up for this account, please contact your administrator.
+          </p>
+        </td></tr>
+        <tr><td style="padding:16px 32px 32px;border-top:1px solid #E2E8F0;">
+          <p style="margin:0;font-size:12px;color:#94A3B8;text-align:center;">DataSentinel · Enterprise data quality</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def _smtp_send_welcome_email(to_email: str, name: str, username: str) -> None:
+    """Best-effort welcome email; never blocks the sign-up flow."""
+    try:
+        if not hasattr(st, "secrets") or "smtp" not in st.secrets or not to_email:
+            return
+        smtp_cfg = st.secrets["smtp"]
+        host = smtp_cfg["host"]
+        port = int(smtp_cfg.get("port", 587))
+        username_smtp = smtp_cfg["username"]
+        password_smtp = smtp_cfg["password"]
+        sender = smtp_cfg.get("sender_email", username_smtp)
+
+        msg = EmailMessage()
+        msg["Subject"] = "Welcome to DataSentinel!"
+        msg["From"] = sender
+        msg["To"] = to_email
+        msg.set_content(
+            f"Hi {name},\n\n"
+            f"Your DataSentinel account has been successfully created. You can now log in using your username: @{username}.\n\n"
+            "Thank you for choosing DataSentinel!"
+        )
+        msg.add_alternative(_welcome_email_html(name, username), subtype="html")
+
+        if port == 465:
+            with smtplib.SMTP_SSL(host, port, timeout=20) as server:
+                server.login(username_smtp, password_smtp)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(host, port, timeout=20) as server:
+                server.starttls()
+                server.login(username_smtp, password_smtp)
+                server.send_message(msg)
+    except Exception:
+        import traceback
+        print("SMTP Error sending welcome email:")
+        traceback.print_exc()
 
 
 def _smtp_send_password_changed_email(to_email: str) -> None:
@@ -589,3 +668,47 @@ def reset_password_with_token(token: str, new_password: str) -> tuple[bool, str]
             return True, "Password updated successfully."
         return False, "Could not update password."
     return False, "This reset link is invalid or has already been used."
+
+
+def delete_user_permanently(username: str) -> None:
+    """Permanently delete user account credentials and delete user runs history."""
+    # 1. Delete credentials from DB or Local YAML
+    engine = _get_db_engine()
+    if engine is not None:
+        with engine.connect() as conn:
+            conn.execute(
+                sqlalchemy.text("DELETE FROM users WHERE username = :u"),
+                {"u": username},
+            )
+            conn.commit()
+    else:
+        config = load_auth_config()
+        if username in config["credentials"]["usernames"]:
+            del config["credentials"]["usernames"][username]
+            save_auth_config(config)
+
+    # 2. Delete pipeline runs history from SQLite
+    try:
+        from src.ingestion import load_config
+        from src.azure_sql import get_engine
+        app_config = load_config("config/pipeline_config.yaml")
+        app_engine = get_engine(app_config)
+        with app_engine.connect() as conn:
+            conn.execute(
+                sqlalchemy.text("DELETE FROM pipeline_runs WHERE username = :u"),
+                {"u": username},
+            )
+            conn.commit()
+    except Exception as e:
+        import logging
+        logging.error(f"Error deleting pipeline runs for username {username}: {e}")
+
+    # 3. Clear cache to reflect deletion immediately
+    try:
+        _fetch_users_from_db.clear()
+    except Exception:
+        pass
+
+    # 4. Logout the user
+    logout_user()
+
