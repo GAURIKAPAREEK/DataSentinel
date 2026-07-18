@@ -1,7 +1,3 @@
-# ============================================================
-# SAVE THIS FILE AS: src/auth.py
-# (the CORE logic file — SMTP, database, password hashing)
-# ============================================================
 import os
 import re
 import secrets
@@ -62,7 +58,7 @@ def _ensure_users_table_once(_engine):
         password TEXT
     )
     """
-    with engine.connect() as conn:
+    with _engine.connect() as conn:
         conn.execute(sqlalchemy.text(create_query))
         conn.commit()
         columns = _table_columns(conn, "users")
