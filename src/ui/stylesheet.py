@@ -1316,7 +1316,7 @@ div[class*="hdr_delete_account_btn"] {{
     text-align: center !important;
     margin-top: 16px !important;
 }}
-div[class*="hdr_delete_account_btn"] [data-testid="stButton"] button,
+div[class*="hdr_delete_account_btn"] button[data-testid*="stBaseButton"],
 div[class*="hdr_delete_account_btn"] button {{
     width: auto !important;
     height: 28px !important;
@@ -1334,8 +1334,9 @@ div[class*="hdr_delete_account_btn"] button {{
     font-weight: 600 !important;
     transition: transform {DURATION} {EASING}, opacity {DURATION} {EASING} !important;
 }}
-div[class*="hdr_delete_account_btn"] [data-testid="stButton"] button p,
-div[class*="hdr_delete_account_btn"] [data-testid="stButton"] button span,
+div[class*="hdr_delete_account_btn"] button[data-testid*="stBaseButton"] p,
+div[class*="hdr_delete_account_btn"] button[data-testid*="stBaseButton"] span,
+div[class*="hdr_delete_account_btn"] button[data-testid*="stBaseButton"] div,
 div[class*="hdr_delete_account_btn"] button p,
 div[class*="hdr_delete_account_btn"] button span {{
     color: #ffffff !important;
