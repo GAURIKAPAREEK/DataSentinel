@@ -52,7 +52,7 @@ def _table_columns(conn, table_name: str) -> set[str]:
 
 
 @st.cache_resource
-def _ensure_users_table_once(engine):
+def _ensure_users_table_once(_engine):
     """Run schema creation/migration only once per app process (not on every rerun)."""
     create_query = """
     CREATE TABLE IF NOT EXISTS users (
