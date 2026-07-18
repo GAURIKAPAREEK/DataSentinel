@@ -51,7 +51,9 @@ def _table_columns(conn, table_name: str) -> set[str]:
     return {row[0] for row in rows}
 
 
-def _ensure_users_table(engine):
+@st.cache_resource
+def _ensure_users_table_once(engine):
+    """Run schema creation/migration only once per app process (not on every rerun)."""
     create_query = """
     CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
@@ -69,6 +71,11 @@ def _ensure_users_table(engine):
         if "reset_expiry" not in columns:
             conn.execute(sqlalchemy.text("ALTER TABLE users ADD COLUMN reset_expiry TEXT"))
         conn.commit()
+    return True
+
+
+def _ensure_users_table(engine):
+    _ensure_users_table_once(engine)
 
 
 def _load_from_secrets():
@@ -85,19 +92,24 @@ def _load_from_secrets():
     return None
 
 
+@st.cache_data(ttl=5)
+def _fetch_users_from_db(_engine) -> dict:
+    with _engine.connect() as conn:
+        rows = conn.execute(
+            sqlalchemy.text("SELECT username, name, email, password FROM users")
+        ).fetchall()
+    return {
+        row[0]: {"name": row[1], "email": row[2], "password": row[3]}
+        for row in rows
+    }
+
+
 def load_auth_config():
     """Load auth from the database if configured, else local YAML or secrets."""
     engine = _get_db_engine()
     if engine is not None:
         _ensure_users_table(engine)
-        with engine.connect() as conn:
-            rows = conn.execute(
-                sqlalchemy.text("SELECT username, name, email, password FROM users")
-            ).fetchall()
-        usernames = {
-            row[0]: {"name": row[1], "email": row[2], "password": row[3]}
-            for row in rows
-        }
+        usernames = _fetch_users_from_db(engine)
         return {
             "credentials": {"usernames": usernames},
             "cookie": {
