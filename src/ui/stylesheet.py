@@ -1352,10 +1352,10 @@ div[class*="cancel_delete_mobile_btn"] {{
     width: 100% !important;
     text-align: center !important;
 }}
-div[class*="confirm_delete_desktop_btn"] [data-testid="stButton"] button,
-div[class*="confirm_delete_mobile_btn"] [data-testid="stButton"] button,
-div[class*="cancel_delete_desktop_btn"] [data-testid="stButton"] button,
-div[class*="cancel_delete_mobile_btn"] [data-testid="stButton"] button,
+div[class*="confirm_delete_desktop_btn"] button[data-testid*="stBaseButton"],
+div[class*="confirm_delete_mobile_btn"] button[data-testid*="stBaseButton"],
+div[class*="cancel_delete_desktop_btn"] button[data-testid*="stBaseButton"],
+div[class*="cancel_delete_mobile_btn"] button[data-testid*="stBaseButton"],
 div[class*="confirm_delete_desktop_btn"] button,
 div[class*="confirm_delete_mobile_btn"] button,
 div[class*="cancel_delete_desktop_btn"] button,
@@ -1372,14 +1372,18 @@ div[class*="cancel_delete_mobile_btn"] button {{
     font-weight: 600 !important;
     box-shadow: var(--ui-shadow-sm) !important;
 }}
-div[class*="confirm_delete_desktop_btn"] [data-testid="stButton"] button p,
-div[class*="confirm_delete_desktop_btn"] [data-testid="stButton"] button span,
-div[class*="confirm_delete_mobile_btn"] [data-testid="stButton"] button p,
-div[class*="confirm_delete_mobile_btn"] [data-testid="stButton"] button span,
-div[class*="cancel_delete_desktop_btn"] [data-testid="stButton"] button p,
-div[class*="cancel_delete_desktop_btn"] [data-testid="stButton"] button span,
-div[class*="cancel_delete_mobile_btn"] [data-testid="stButton"] button p,
-div[class*="cancel_delete_mobile_btn"] [data-testid="stButton"] button span,
+div[class*="confirm_delete_desktop_btn"] button[data-testid*="stBaseButton"] p,
+div[class*="confirm_delete_desktop_btn"] button[data-testid*="stBaseButton"] span,
+div[class*="confirm_delete_desktop_btn"] button[data-testid*="stBaseButton"] div,
+div[class*="confirm_delete_mobile_btn"] button[data-testid*="stBaseButton"] p,
+div[class*="confirm_delete_mobile_btn"] button[data-testid*="stBaseButton"] span,
+div[class*="confirm_delete_mobile_btn"] button[data-testid*="stBaseButton"] div,
+div[class*="cancel_delete_desktop_btn"] button[data-testid*="stBaseButton"] p,
+div[class*="cancel_delete_desktop_btn"] button[data-testid*="stBaseButton"] span,
+div[class*="cancel_delete_desktop_btn"] button[data-testid*="stBaseButton"] div,
+div[class*="cancel_delete_mobile_btn"] button[data-testid*="stBaseButton"] p,
+div[class*="cancel_delete_mobile_btn"] button[data-testid*="stBaseButton"] span,
+div[class*="cancel_delete_mobile_btn"] button[data-testid*="stBaseButton"] div,
 div[class*="confirm_delete_desktop_btn"] button p,
 div[class*="confirm_delete_desktop_btn"] button span,
 div[class*="confirm_delete_mobile_btn"] button p,
