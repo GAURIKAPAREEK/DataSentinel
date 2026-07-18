@@ -1310,13 +1310,13 @@ def _dashboard() -> str:
 }}
 
 /* Delete Account Popover (Desktop) Styles */
-div[class*="st-key-hdr_delete_account_btn"] {{
+div[class*="hdr_delete_account_btn"] {{
     display: block !important;
     width: 100% !important;
     text-align: center !important;
     margin-top: 16px !important;
 }}
-div[class*="st-key-hdr_delete_account_btn"] button {{
+div[class*="hdr_delete_account_btn"] button {{
     width: auto !important;
     height: 28px !important;
     min-height: 28px !important;
@@ -1333,22 +1333,22 @@ div[class*="st-key-hdr_delete_account_btn"] button {{
     font-weight: 600 !important;
     transition: transform {DURATION} {EASING}, opacity {DURATION} {EASING} !important;
 }}
-div[class*="st-key-hdr_delete_account_btn"] button:hover {{
+div[class*="hdr_delete_account_btn"] button:hover {{
     opacity: 0.9 !important;
     transform: translateY(-1px) !important;
 }}
-div[class*="st-key-confirm_delete_desktop_btn"],
-div[class*="st-key-cancel_delete_desktop_btn"],
-div[class*="st-key-confirm_delete_mobile_btn"],
-div[class*="st-key-cancel_delete_mobile_btn"] {{
+div[class*="confirm_delete_desktop_btn"],
+div[class*="cancel_delete_desktop_btn"],
+div[class*="confirm_delete_mobile_btn"],
+div[class*="cancel_delete_mobile_btn"] {{
     display: block !important;
     width: 100% !important;
     text-align: center !important;
 }}
-div[class*="st-key-confirm_delete_desktop_btn"] button,
-div[class*="st-key-confirm_delete_mobile_btn"] button,
-div[class*="st-key-cancel_delete_desktop_btn"] button,
-div[class*="st-key-cancel_delete_mobile_btn"] button {{
+div[class*="confirm_delete_desktop_btn"] button,
+div[class*="confirm_delete_mobile_btn"] button,
+div[class*="cancel_delete_desktop_btn"] button,
+div[class*="cancel_delete_mobile_btn"] button {{
     width: 100% !important;
     height: 28px !important;
     min-height: 28px !important;
@@ -1361,14 +1361,14 @@ div[class*="st-key-cancel_delete_mobile_btn"] button {{
     font-weight: 600 !important;
     box-shadow: var(--ui-shadow-sm) !important;
 }}
-div[class*="st-key-confirm_delete_desktop_btn"] button p,
-div[class*="st-key-confirm_delete_desktop_btn"] button span,
-div[class*="st-key-confirm_delete_mobile_btn"] button p,
-div[class*="st-key-confirm_delete_mobile_btn"] button span,
-div[class*="st-key-cancel_delete_desktop_btn"] button p,
-div[class*="st-key-cancel_delete_desktop_btn"] button span,
-div[class*="st-key-cancel_delete_mobile_btn"] button p,
-div[class*="st-key-cancel_delete_mobile_btn"] button span {{
+div[class*="confirm_delete_desktop_btn"] button p,
+div[class*="confirm_delete_desktop_btn"] button span,
+div[class*="confirm_delete_mobile_btn"] button p,
+div[class*="confirm_delete_mobile_btn"] button span,
+div[class*="cancel_delete_desktop_btn"] button p,
+div[class*="cancel_delete_desktop_btn"] button span,
+div[class*="cancel_delete_mobile_btn"] button p,
+div[class*="cancel_delete_mobile_btn"] button span {{
     color: #ffffff !important;
 }}
 [data-testid="stAlert"] {{ margin: {SP[12]}px 0 !important; }}
