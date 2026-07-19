@@ -20,13 +20,16 @@ def chart_layout(title: str = "") -> dict:
         "tickfont": {"size": 12, "color": muted, "family": "Outfit"},
         "title": {"font": {"size": 12, "color": muted, "family": "Outfit"}},
         "zeroline": False,
+        "automargin": True,
     }
     return {
         "title": {"text": title, "font": {"size": 15, "color": text, "family": "Outfit"}, "x": 0, "xanchor": "left"},
         "paper_bgcolor": v["--ui-chart-bg"],
         "plot_bgcolor": v["--ui-chart-bg"],
         "font": {"family": "Outfit, sans-serif", "color": text, "size": 12},
-        "margin": {"l": 48, "r": 20, "t": 44, "b": 64},
+        # Extra right margin so the threshold annotation has room to sit
+        # fully inside the plot instead of being clipped at the edge.
+        "margin": {"l": 48, "r": 72, "t": 44, "b": 64},
         "height": 340,
         "xaxis": dict(axis),
         "yaxis": dict(axis),
@@ -108,21 +111,30 @@ def render_quality_trend_charts(
                 color_discrete_sequence=palette,
             )
             fig.update_traces(line=dict(width=2.5), marker=dict(size=9))
-            if threshold is not None:
-                fig.add_hline(
-                    y=float(threshold),
-                    line_dash="dot",
-                    line_color=get_vars()["--ui-danger"],
-                    annotation_text="Threshold",
-                    annotation_font_color=get_vars()["--ui-danger"],
-                )
             layout = chart_layout("Quality score over time")
-            layout["yaxis"]["range"] = [0, 105]
+            # Give the line some breathing room top and bottom so markers and
+            # the threshold marking never sit flush against the plot edge.
+            layout["yaxis"]["range"] = [-4, 109]
             layout["yaxis"]["tickfont"] = {"size": 12, "color": get_vars()["--ui-chart-muted"], "family": "Outfit"}
             layout["xaxis"]["tickfont"] = {"size": 12, "color": get_vars()["--ui-chart-muted"], "family": "Outfit"}
             if x_col == "run_label":
                 layout["xaxis"]["type"] = "category"
             fig.update_layout(**layout)
+            if threshold is not None:
+                fig.add_hline(
+                    y=float(threshold),
+                    line_dash="dot",
+                    line_width=2,
+                    line_color=get_vars()["--ui-danger"],
+                    annotation_text=f"Threshold ({threshold}%)",
+                    annotation_position="top left",
+                    annotation_font_color=get_vars()["--ui-danger"],
+                    annotation_font_size=12,
+                    annotation_bgcolor=get_vars()["--ui-chart-bg"],
+                    annotation_borderpad=4,
+                    annotation_xshift=6,
+                    annotation_yshift=4,
+                )
             # Theme in key forces Plotly remount so colors update without hard refresh
             st.plotly_chart(
                 fig,
