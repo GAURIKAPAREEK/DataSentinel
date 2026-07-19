@@ -184,6 +184,19 @@ def _run_pipeline(uploaded_file):
 
 def render_dashboard_page() -> None:
     dashboard_hero(has_data=has_history)
+
+    # Upload sits right under the hero so it's the first actionable thing on
+    # the page — no need to scroll past "How it works" to find it.
+    panel_start()
+    section("Upload dataset", "CSV, JSON, or Excel")
+    upload_zone()
+    uploaded_file = st.file_uploader(
+        "Upload",
+        type=["csv", "json", "xlsx"],
+        label_visibility="collapsed",
+        key="main_uploader",
+    )
+
     how_it_works()
 
     if has_history:
@@ -201,39 +214,10 @@ def render_dashboard_page() -> None:
             ("Anomalies", "0", "Detected"),
         ])
 
-    # Charts always visible when history exists (do not hide when a file stays selected)
-    if has_history:
-        section("Quality trend", "Follow score and anomalies across previous runs")
-        threshold = config.get("quality", {}).get("min_quality_score", 70)
-        render_quality_trend_charts(trend_df, threshold=threshold, key_prefix="dash_trend")
-
-    upload_col, activity_col = st.columns([1.15, 1], gap="medium")
-
-    with upload_col:
-        panel_start()
-        section("Upload dataset", "CSV, JSON, or Excel")
-        upload_zone()
-        uploaded_file = st.file_uploader(
-            "Upload",
-            type=["csv", "json", "xlsx"],
-            label_visibility="collapsed",
-            key="main_uploader",
-        )
-
-    with activity_col:
-        panel_start()
-        section("Recent activity", "Latest pipeline runs")
-        if not has_history:
-            empty_state("No runs yet", "Upload a dataset to start your first validation.", compact=True)
-        else:
-            recent = trend_df.sort_values("run_timestamp", ascending=False).head(5)
-            activity_df = recent[["run_timestamp", "file_name", "quality_score", "anomalies_found"]].copy()
-            activity_df.columns = ["Time", "Dataset", "Quality %", "Anomalies"]
-            themed_table(activity_df, max_rows=5)
-
-    # Idle dashboard quarantine panel (latest saved file)
-    if uploaded_file is None:
-        quarantine_panel(config)
+    # Quality trend chart lives on Analytics and recent runs live on History,
+    # so the dashboard itself no longer duplicates either of them here.
+    # Quarantine is only shown for the run just performed below — no more
+    # stale "already quarantined" data appearing before anything is uploaded.
 
     if uploaded_file is not None:
         _run_pipeline(uploaded_file)
