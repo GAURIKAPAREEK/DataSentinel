@@ -54,7 +54,15 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
     treat_empty = cleaning.get("treat_empty_as_null", True)
     condition = "is_null_or_empty" if treat_empty else "is_null"
 
+    null_conditions = {"is_null", "is_null_or_empty"}
     covered = {(rule["column"], rule["condition"]) for rule in rules if "column" in rule}
+    # A column already has *some* null-style rule (whether it's named
+    # "is_null" or "is_null_or_empty") — don't add a second one just because
+    # the exact condition string doesn't match, or the same row gets flagged
+    # twice with a duplicated quarantine reason.
+    null_covered_columns = {
+        rule["column"] for rule in rules if rule.get("condition") in null_conditions
+    }
 
     if mode == "strict":
         target_columns = list(df.columns)
@@ -65,7 +73,7 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
 
     for col in target_columns:
         key = (col, condition)
-        if key in covered:
+        if key in covered or col in null_covered_columns:
             continue
         rules.append(
             {
@@ -77,6 +85,7 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
             }
         )
         covered.add(key)
+        null_covered_columns.add(col)
 
     return rules
 
