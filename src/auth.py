@@ -412,6 +412,7 @@ def _welcome_email_html(name: str, username: str) -> str:
     from src.logo import logo_email_html
 
     logo_block = logo_email_html(48)
+    login_link = _app_base_url()
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -432,6 +433,9 @@ def _welcome_email_html(name: str, username: str) -> str:
           <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#64748B;text-align:left;">
             DataSentinel helps you validate and monitor dataset quality, track quality scoring, and isolate critical violations automatically.
           </p>
+          <a href="{login_link}" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#5B5CEB,#8B5CF6);color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px;">
+            Sign in to DataSentinel
+          </a>
           <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#94A3B8;">
             If you did not sign up for this account, please contact your administrator.
           </p>
@@ -465,6 +469,7 @@ def _smtp_send_welcome_email(to_email: str, name: str, username: str) -> None:
         msg.set_content(
             f"Hi {name},\n\n"
             f"Your DataSentinel account has been successfully created. You can now log in using your username: @{username}.\n\n"
+            f"Sign in here: {_app_base_url()}\n\n"
             "Thank you for choosing DataSentinel!"
         )
         msg.add_alternative(_welcome_email_html(name, username), subtype="html")
