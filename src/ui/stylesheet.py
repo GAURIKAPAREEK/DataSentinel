@@ -1579,7 +1579,8 @@ div[class*="hdr_delete_account_btn"] button {{
     height: 28px !important;
     min-height: 28px !important;
     padding: 0 14px !important;
-    margin-left: 8px !important;
+   position: relative !important;   
+    left: 8px !important;
     font-size: 11px !important;
     background: var(--ui-gradient) !important;
     color: #ffffff !important;
