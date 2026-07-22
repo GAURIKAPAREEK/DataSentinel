@@ -326,10 +326,10 @@ def logout_user() -> None:
 def _app_base_url() -> str:
     try:
         if hasattr(st, "secrets") and "smtp" in st.secrets:
-            return st.secrets["smtp"].get("app_url", "https://datasentinel-dataanalysis.streamlit.app").rstrip("/")
+            return st.secrets["smtp"].get("app_url", "https://zkakxa-nxqfetaatxza9yjnjbctxd.streamlit.app/").rstrip("/")
     except (FileNotFoundError, KeyError, TypeError):
         pass
-    return "https://datasentinel-dataanalysis.streamlit.app"
+    return "https://zkakxa-nxqfetaatxza9yjnjbctxd.streamlit.app/"
 
 
 def _build_reset_link(token: str) -> str:                                                                                                                                                             
