@@ -2191,8 +2191,12 @@ def _responsive() -> str:
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div:has([class*="theme"]),
     .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"] > div:has([class*="logout"]),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div:has([class*="logout"]),
-    .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [class*="theme"],
-    .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [class*="logout"] {
+    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) [class*="theme"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) [class*="theme"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) [class*="theme"],
+    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) [class*="logout"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) [class*="logout"],
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) [class*="logout"] {
         display: none !important;
         width: 0 !important;
         min-width: 0 !important;
