@@ -524,7 +524,7 @@ def _ctrl_buttons() -> str:
 .st-key-ui_forgot_link [data-testid="stBaseButton-secondary"] p {{ color: var(--ui-primary) !important; margin: 0 !important; }}
 
 /* Profile popover — matches logout / nav height */
-.st-key-hdr_profile, .stKey-hdr_profile {{
+[class*="st-key-hdr_profile"], [class*="stKey-hdr_profile"] {{
     width: auto !important;
     max-width: 180px !important;
     height: 44px !important;
@@ -535,17 +535,17 @@ def _ctrl_buttons() -> str:
     margin: 0 !important;
     overflow: hidden !important;
 }}
-.st-key-hdr_profile [data-testid="stPopover"],
-.stKey-hdr_profile [data-testid="stPopover"],
-.st-key-hdr_profile [data-testid="stElementContainer"],
-.stKey-hdr_profile [data-testid="stElementContainer"] {{
+[class*="st-key-hdr_profile"] [data-testid="stPopover"],
+[class*="stKey-hdr_profile"] [data-testid="stPopover"],
+[class*="st-key-hdr_profile"] [data-testid="stElementContainer"],
+[class*="stKey-hdr_profile"] [data-testid="stElementContainer"] {{
     width: auto !important;
     max-width: 180px !important;
     height: 44px !important;
     max-height: 44px !important;
     margin: 0 !important;
 }}
-.st-key-hdr_profile button, .stKey-hdr_profile button {{
+[class*="st-key-hdr_profile"] button, [class*="stKey-hdr_profile"] button {{
     width: auto !important;
     min-width: max-content !important;
     max-width: 180px !important;
@@ -565,12 +565,12 @@ def _ctrl_buttons() -> str:
     white-space: nowrap !important;
     overflow: hidden !important;
 }}
-.st-key-hdr_profile button:hover, .stKey-hdr_profile button:hover {{
+[class*="st-key-hdr_profile"] button:hover, [class*="stKey-hdr_profile"] button:hover {{
     background: var(--ui-muted) !important;
     border-color: var(--ui-border-strong) !important;
     transform: none !important;
 }}
-.st-key-hdr_profile button p, .stKey-hdr_profile button p {{
+[class*="st-key-hdr_profile"] button p, [class*="stKey-hdr_profile"] button p {{
     color: var(--ui-text) !important;
     font-weight: 600 !important;
     font-size: 14px !important;
@@ -579,7 +579,7 @@ def _ctrl_buttons() -> str:
     text-overflow: ellipsis !important;
     line-height: 1 !important;
 }}
-.st-key-hdr_profile button::before, .stKey-hdr_profile button::before {{
+[class*="st-key-hdr_profile"] button::before, [class*="stKey-hdr_profile"] button::before {{
     content: "" !important;
     width: 28px !important;
     height: 28px !important;
