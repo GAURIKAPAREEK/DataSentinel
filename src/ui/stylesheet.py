@@ -1579,8 +1579,6 @@ div[class*="hdr_delete_account_btn"] button {{
     height: 28px !important;
     min-height: 28px !important;
     padding: 0 14px !important;
-   position: relative !important;   
-    left: 8px !important;
     font-size: 11px !important;
     background: var(--ui-gradient) !important;
     color: #ffffff !important;
@@ -2134,21 +2132,21 @@ def _responsive() -> str:
         padding: 10px 12px !important;
         min-height: 60px !important;
     }
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(1),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(1) {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-brand),
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-brand) {
         flex: 0 0 auto !important;
         min-width: 0 !important;
         width: auto !important;
     }
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(3),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(3) {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-actions),
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-actions) {
         flex: 1 1 auto !important;
         min-width: 0 !important;
         width: auto !important;
         justify-content: flex-end !important;
     }
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:nth-child(4),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:nth-child(4) {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger),
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger) {
         flex: 0 0 auto !important;
         min-width: 44px !important;
         width: auto !important;
@@ -2207,7 +2205,8 @@ def _responsive() -> str:
     }
     /* Keep actions columns on a single line so profile popover does not stack/hide */
     .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"],
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"],
+    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div[class*="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
@@ -2217,8 +2216,9 @@ def _responsive() -> str:
         margin: 0 !important;
         padding: 0 !important;
     }
-    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="column"],
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div,
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div[data-testid="stHorizontalBlock"] > div,
+    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div[class*="stHorizontalBlock"] > div {
         min-width: 0 !important;
         width: auto !important;
         max-width: none !important;
