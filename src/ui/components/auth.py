@@ -71,12 +71,13 @@ def _login() -> None:
     if st.session_state.get("auth_error"):
         _error(st.session_state["auth_error"])
     if st.session_state.pop("signup_success", None):
-        st.success("Account created successfully! Sign in with your credentials below.")
+        st.success("🎉 Account created successfully! Sign in with your credentials below.")
         st.markdown(
             '<div style="margin:-4px 0 14px 0;padding:10px 14px;background:var(--ui-accent-soft);'
             'border:1px solid var(--ui-primary-border);border-radius:10px;text-align:center;">'
+            '<span style="color:var(--ui-text);font-size:13px;">Need to return to main page? </span>'
             '<a href="?" target="_self" style="color:var(--ui-primary);font-weight:600;text-decoration:none;">'
-            ' Go to Login</a>'
+            '🔗 Go to Login / Website Portal →</a>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -151,17 +152,25 @@ def _signup() -> None:
         _error(errors["password"])
 
     loading = st.session_state.get("auth_loading", False)
-    submit_disabled = loading or bool(errors) or not (val_name.strip() and val_email.strip() and val_username.strip() and val_password)
 
-    if st.button("Creating account…" if loading else "Create account", key="signup_submit", type="primary", use_container_width=True, disabled=submit_disabled):
-        st.session_state["auth_loading"] = True
-        ok, message = register_user(name, email, username, password)
-        st.session_state["auth_loading"] = False
-        if ok:
-            st.session_state["signup_success"] = True
-            _goto("login")
-            st.rerun()
-        st.session_state["auth_error"] = message
+    if st.button("Creating account…" if loading else "Create account", key="signup_submit", type="primary", use_container_width=True, disabled=loading):
+        # Validate fields on submission
+        submit_errors = validate_signup_fields(name, email, username, password)
+        if not (name.strip() and email.strip() and username.strip() and password):
+            st.session_state["auth_error"] = "All fields are required."
+        elif submit_errors:
+            st.session_state["auth_error"] = list(submit_errors.values())[0]
+        else:
+            st.session_state["auth_loading"] = True
+            st.session_state.pop("auth_error", None)
+            ok, message = register_user(name, email, username, password)
+            st.session_state["auth_loading"] = False
+            if ok:
+                st.session_state["signup_success"] = True
+                _goto("login")
+                st.rerun()
+            else:
+                st.session_state["auth_error"] = message
     if st.session_state.get("auth_error") and _page() == "signup":
         _error(st.session_state["auth_error"])
     if st.button("Already have an account? Sign in", key="goto_login", type="secondary", use_container_width=True):
