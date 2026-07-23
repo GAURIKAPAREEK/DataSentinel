@@ -2144,12 +2144,19 @@ def _responsive() -> str:
         min-width: 0 !important;
         width: auto !important;
         justify-content: flex-end !important;
+        padding-right: 0 !important;
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger),
     .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger) {
         flex: 0 0 auto !important;
         min-width: 44px !important;
         width: auto !important;
+        justify-content: flex-end !important;
+        padding-left: 0 !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [data-testid="stPopover"] {
+        margin-left: auto !important;
+        display: flex !important;
         justify-content: flex-end !important;
     }
     /* Compact burger button */
