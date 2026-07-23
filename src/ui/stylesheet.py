@@ -2156,8 +2156,6 @@ def _responsive() -> str:
     }
     .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [data-testid="stPopover"] {
         margin-left: auto !important;
-        display: flex !important;
-        justify-content: flex-end !important;
     }
     /* Compact burger button */
     .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_burger_btn"] button,
@@ -2226,6 +2224,15 @@ def _responsive() -> str:
         width: auto !important;
         max-width: none !important;
         flex: 0 0 auto !important;
+    }
+    /* Fix mobile popover offset position (keep on-screen) */
+    .block-container:has(.ui-hdr-anchor) [data-testid="stPopoverBody"] {
+        position: fixed !important;
+        right: 12px !important;
+        left: auto !important;
+        width: calc(100vw - 24px) !important;
+        max-width: 320px !important;
+        z-index: 999999 !important;
     }
     /* Center the 'How it works' kicker on mobile */
     .ui-how-kicker {
