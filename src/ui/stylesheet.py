@@ -2132,28 +2132,37 @@ def _responsive() -> str:
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-brand),
     .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-brand) {
-        flex: 0 0 auto !important;
-        min-width: 0 !important;
         width: auto !important;
+        min-width: 0 !important;
+    }
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div,
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div {
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-actions),
     .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-actions) {
         flex: 1 1 auto !important;
-        min-width: 0 !important;
-        width: auto !important;
         justify-content: flex-end !important;
         padding-right: 0 !important;
     }
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger),
     .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"]:has(.ui-brand) > div:has(.ui-hdr-burger) {
-        flex: 0 0 auto !important;
-        min-width: 44px !important;
-        width: auto !important;
+        flex: 0 0 44px !important;
+        width: 44px !important;
         justify-content: flex-end !important;
         padding-left: 0 !important;
     }
     .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [data-testid="stPopover"] {
         margin-left: auto !important;
+    }
+    .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_profile"],
+    .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_profile"] {
+        z-index: 9999 !important;
+        position: relative !important;
+        pointer-events: auto !important;
     }
     /* Compact burger button */
     .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_burger_btn"] button,
