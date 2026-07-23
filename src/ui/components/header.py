@@ -86,7 +86,7 @@ def render_header(
         with profile_c:
             with st.popover(short_name, key="hdr_profile_v7", use_container_width=False):
                 profile_html = (
-                    f'<div class="ui-profile-card" style="display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:16px!important;padding:8px 4px 4px!important;min-width:300px!important;">'
+                    f'<div class="ui-profile-card" style="display:flex!important;flex-direction:row!important;align-items:flex-start!important;gap:16px!important;padding:8px 4px 4px!important;min-width:270px!important;">'
                     f'<div class="ui-profile-avatar" style="width:48px!important;height:48px!important;border-radius:14px!important;background:var(--ui-gradient)!important;color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-weight:700!important;font-size:18px!important;flex-shrink:0!important;margin-top:2px!important;box-shadow:0 4px 12px rgba(0,0,0,0.2)!important;">{html.escape(initials)}</div>'
                     f'<div class="ui-profile-body" style="flex:1!important;min-width:0!important;">'
                     f'<table style="width:100%!important;border-collapse:collapse!important;margin:0!important;padding:0!important;border:none!important;background:transparent!important;">'
@@ -114,23 +114,7 @@ def render_header(
                     st.html(profile_html)
                 else:
                     st.markdown(profile_html, unsafe_allow_html=True)
-                if st.session_state.get("confirm_delete_desktop"):
-                    st.warning("⚠️ Delete account permanently? This cannot be undone.")
-                    col1, col2, col3, col4 = st.columns([0.1, 0.4, 0.4, 0.1])
-                    with col2:
-                        if st.button("Yes, delete", key="confirm_delete_desktop_btn", type="primary", use_container_width=True):
-                            from src.auth import delete_user_permanently
-                            delete_user_permanently(username)
-                    with col3:
-                        if st.button("Cancel", key="cancel_delete_desktop_btn", type="primary", use_container_width=True):
-                            st.session_state.confirm_delete_desktop = False
-                            st.rerun()
-                else:
-                    c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
-                    with c2:
-                        if st.button("Delete account permanently", key="hdr_delete_account_btn", type="primary", use_container_width=True):
-                            st.session_state.confirm_delete_desktop = True
-                            st.rerun()
+
 
         with logout_c:
             if st.button("Logout", key="ui_logout_btn", type="secondary", help="Log out"):
