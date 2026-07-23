@@ -2187,24 +2187,12 @@ def _responsive() -> str:
         display: none !important;
     }
     /* Hide theme toggle and logout columns in header on mobile */
-    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div:has([class*="hdr_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div:has([class*="hdr_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div:has([class*="hdr_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div:has([class*="main_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div:has([class*="main_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div:has([class*="main_theme"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div:has([class*="ui_theme_toggle"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div:has([class*="ui_theme_toggle"]),
-    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div[class*="ui_theme_toggle"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="column"]:has(.ui-hdr-actions) div:has([class*="ui_logout_btn"]),
-    .block-container:has(.ui-hdr-anchor) div[data-testid="stColumn"]:has(.ui-hdr-actions) div:has([class*="ui_logout_btn"]),
-    .block-container:has(.ui-hdr-anchor) div[class*="stColumn"]:has(.ui-hdr-actions) div:has([class*="ui_logout_btn"]),
-    .block-container:has(.ui-hdr-anchor) [class*="st-key-hdr_theme"],
-    .block-container:has(.ui-hdr-anchor) [class*="stKey-hdr_theme"],
-    .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
-    .block-container:has(.ui-hdr-anchor) [class*="stKey-main_theme"],
-    .block-container:has(.ui-hdr-anchor) [class*="st-key-ui_theme_toggle"],
-    .block-container:has(.ui-hdr-anchor) [class*="stKey-ui_theme_toggle"] {
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"] > div:has([class*="theme"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div:has([class*="theme"]),
+    .block-container:has(.ui-hdr-anchor) div[class*="stHorizontalBlock"] > div:has([class*="logout"]),
+    .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"] > div:has([class*="logout"]),
+    .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [class*="theme"],
+    .block-container:has(.ui-hdr-anchor) div:has(.ui-hdr-actions) [class*="logout"] {
         display: none !important;
         width: 0 !important;
         min-width: 0 !important;
