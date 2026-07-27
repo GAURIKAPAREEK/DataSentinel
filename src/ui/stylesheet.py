@@ -192,7 +192,6 @@ def _buttons() -> str:
 """
 
 
-
 def _ctrl_buttons() -> str:
     keys = ["ui_theme_toggle", "main_theme", "hdr_theme"]
     wrappers = []
@@ -205,8 +204,6 @@ def _ctrl_buttons() -> str:
         btn_selectors.append(f"{w} button")
         btn_selectors.append(f"{w} [data-testid='stBaseButton-secondary']")
     btn_sel = ", ".join(btn_selectors)
-    # Critical: never append " p" to a comma-joined list — that only suffixes the last item
-    # and incorrectly targets every preceding button. Build label selectors explicitly.
     label_sel = ", ".join(
         f"{w} button p, {w} button span, {w} [data-testid='stBaseButton-secondary'] p, "
         f"{w} [data-testid='stBaseButton-secondary'] span"
@@ -669,7 +666,6 @@ def _inputs() -> str:
     fill: none !important;
     stroke: currentColor !important;
 }}
-/* purana block (line 640-662) hata ke ye daalo */
 [data-testid="stSelectbox"] {{ color: var(--ui-text) !important; }}
 [data-testid="stSelectbox"] * {{
     color: var(--ui-text) !important;
@@ -814,7 +810,6 @@ def _header() -> str:
 
 
 .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) {{
-    /* Flex 1fr auto 1fr equivalent — avoid CSS grid (collapses Streamlit columns) */
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -834,7 +829,6 @@ def _header() -> str:
     border-radius: {r}px;
     box-shadow: var(--ui-shadow-sm);
 }}
-/* Streamlit ≥1.33 uses data-testid="stColumn"; older builds used "column" */
 .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"],
 .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"] {{
     display: flex !important;
@@ -2232,20 +2226,33 @@ def _responsive() -> str:
         max-width: none !important;
         flex: 0 0 auto !important;
     }
-    /* Fix mobile popover offset position (keep on-screen, anchored under the header) */
+
+    /* Fix mobile popover offset position (dark background & auto horizontal centering) */
     div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]),
     [data-testid="stPopoverBody"] {
         position: fixed !important;
-        top: 72px !important;
-        right: 12px !important;
-        left: auto !important;
+        top: 70px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
         bottom: auto !important;
-        width: calc(100vw - 24px) !important;
-        max-width: 300px !important;
-        max-height: calc(100vh - 96px) !important;
+        width: 90vw !important;
+        max-width: 340px !important;
+        max-height: calc(100vh - 90px) !important;
+        background-color: var(--ui-elevated, #0b1329) !important;
+        border: 1px solid var(--ui-border, #1e293b) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+        padding: 16px !important;
         overflow-y: auto !important;
         z-index: 999999 !important;
+        box-sizing: border-box !important;
     }
+    div[data-baseweb="popover"] *,
+    [data-testid="stPopoverBody"] * {
+        color: var(--ui-text, #f8fafc) !important;
+    }
+
     /* Center the 'How it works' kicker on mobile */
     .ui-how-kicker {
         text-align: center !important;
