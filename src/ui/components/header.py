@@ -126,7 +126,7 @@ def render_header(
                             st.session_state.confirm_delete_desktop = False
                             st.rerun()
                 else:
-                    c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
+                    c1, c2, c3 = st.columns([0.22, 0.68, 0.10])
                     with c2:
                         if st.button("Delete account permanently", key="hdr_delete_account_btn", type="primary", use_container_width=True):
                             st.session_state.confirm_delete_desktop = True
