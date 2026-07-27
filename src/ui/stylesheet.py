@@ -1035,7 +1035,7 @@ div[data-baseweb="popover"] .ui-profile-key,
     letter-spacing: 0.05em !important;
     color: var(--ui-text-3) !important;
     -webkit-text-fill-color: var(--ui-text-3) !important;
-    min-width: 72px !important;
+    min-width: 68px !important;
     flex-shrink: 0 !important;
     display: inline-block !important;
 }}
@@ -1046,7 +1046,8 @@ div[data-baseweb="popover"] .ui-profile-val,
     font-weight: 600 !important;
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
-    word-break: break-all !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
     display: inline-block !important;
 }}
 .ui-val-name {{
@@ -1123,42 +1124,42 @@ div[data-baseweb="popover"] [data-testid="stButton"] button,
     .ui-wordmark {{ display: none; }}
 }}
 /* ---------------- Profile popup Mobile Fix ---------------- */
-@media (max-width: 640px){
+@media (max-width: 640px){{
 
-div[data-baseweb="popover"]{
+div[data-baseweb="popover"]{{
     left:50% !important;
     transform:translateX(-50%) !important;
     right:auto !important;
     width:92vw !important;
     max-width:360px !important;
-}
+}}
 
-div[data-baseweb="popover"] > div{
+div[data-baseweb="popover"] > div{{
     width:100% !important;
     max-width:360px !important;
     border-radius:16px !important;
     padding:18px !important;
     box-sizing:border-box;
-}
+}}
 
-.ui-profile-card{
+.ui-profile-card{{
     min-width:unset !important;
     width:100% !important;
-}
+}}
 
-.ui-profile-avatar{
+.ui-profile-avatar{{
     width:48px !important;
     height:48px !important;
-}
+}}
 
-.ui-profile-chips{
+.ui-profile-chips{{
     flex-wrap:wrap !important;
-}
+}}
 
-.st-key-hdr_delete_account_btn button{
+.st-key-hdr_delete_account_btn button{{
     width:100% !important;
-}
-}
+}}
+}}
 
 .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
 .block-container:has(.ui-hdr-anchor) [class*="stKey-main_theme"],
@@ -2278,7 +2279,7 @@ def _responsive() -> str:
         left: auto !important;
         bottom: auto !important;
         width: calc(100vw - 24px) !important;
-        max-width: 300px !important;
+        max-width: 340px !important;
         max-height: calc(100vh - 96px) !important;
         overflow-y: auto !important;
         z-index: 999999 !important;
