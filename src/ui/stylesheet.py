@@ -2085,7 +2085,7 @@ def _responsive() -> str:
 .ui-mobile-wordmark { display: none; }
 
 /* --- Desktop: hide hamburger column completely --- */
-@media (min-width: 901px) {
+@media (min-width: 641px) {
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-hdr-burger),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-hdr-burger) {
         display: none !important;
@@ -2104,8 +2104,8 @@ def _responsive() -> str:
     }
 }
 
-/* --- Mobile (<=900px): burger visible, inline nav hidden --- */
-@media (max-width: 900px) {
+/* --- Mobile (<=640px): burger visible, inline nav hidden --- */
+@media (max-width: 640px) {
     /* Hide the inline nav column (dashboard/analytics/history buttons) */
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-nav-row),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-nav-row) {
