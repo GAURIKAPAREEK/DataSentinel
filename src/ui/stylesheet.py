@@ -1122,6 +1122,43 @@ div[data-baseweb="popover"] [data-testid="stButton"] button,
     }}
     .ui-wordmark {{ display: none; }}
 }}
+/* ---------------- Profile popup Mobile Fix ---------------- */
+@media (max-width: 640px){
+
+div[data-baseweb="popover"]{
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    right:auto !important;
+    width:92vw !important;
+    max-width:360px !important;
+}
+
+div[data-baseweb="popover"] > div{
+    width:100% !important;
+    max-width:360px !important;
+    border-radius:16px !important;
+    padding:18px !important;
+    box-sizing:border-box;
+}
+
+.ui-profile-card{
+    min-width:unset !important;
+    width:100% !important;
+}
+
+.ui-profile-avatar{
+    width:48px !important;
+    height:48px !important;
+}
+
+.ui-profile-chips{
+    flex-wrap:wrap !important;
+}
+
+.st-key-hdr_delete_account_btn button{
+    width:100% !important;
+}
+}
 
 .block-container:has(.ui-hdr-anchor) [class*="st-key-main_theme"],
 .block-container:has(.ui-hdr-anchor) [class*="stKey-main_theme"],
