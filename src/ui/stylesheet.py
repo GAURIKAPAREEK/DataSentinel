@@ -2232,14 +2232,18 @@ def _responsive() -> str:
         max-width: none !important;
         flex: 0 0 auto !important;
     }
-    /* Fix mobile popover offset position (keep on-screen) */
+    /* Fix mobile popover offset position (keep on-screen, anchored under the header) */
     div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]),
     [data-testid="stPopoverBody"] {
         position: fixed !important;
+        top: 72px !important;
         right: 12px !important;
         left: auto !important;
+        bottom: auto !important;
         width: calc(100vw - 24px) !important;
-        max-width: 320px !important;
+        max-width: 300px !important;
+        max-height: calc(100vh - 96px) !important;
+        overflow-y: auto !important;
         z-index: 999999 !important;
     }
     /* Center the 'How it works' kicker on mobile */
