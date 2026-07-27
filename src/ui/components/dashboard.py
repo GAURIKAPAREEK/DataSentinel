@@ -1,177 +1,273 @@
-"""Dashboard UI blocks."""
-
-from __future__ import annotations
-
-import html
 import os
-from glob import glob
+import sys
 
 import pandas as pd
 import streamlit as st
 
-from src.paths import resolve_path
-from src.ui.logo import crystal_svg
+sys.path.append(os.path.dirname(__file__))
 
-HOW_IT_WORKS = (
-    ("01", "Ingest", "Load raw datasets CSV, JSON, or Excel securely after sign-in."),
-    ("02", "Validate", "Null checks, type-rules, and quality scoring."),
-    ("03", "Quarantine", "Isolate invalid rows; export only clean dataset."),
-    ("04", "Monitor", "Private run history and trend analytics per account."),
+_FAVICON = os.path.join(os.path.dirname(__file__), "assets", "brand", "favicon.png")
+
+from src.anomaly_detector import detect_statistical_anomalies
+from src.auth import get_authenticator
+from src.azure_sql import save_pipeline_run
+from src.cleaning import count_null_cells, save_clean_data, verify_clean_data
+from src.ui.chart import render_quality_trend_charts
+from src.ingestion import load_config, load_file
+from src.paths import resolve_path
+from src.profiler import profile_dataframe
+from src.quality_trend import get_quality_trend
+from src.quarantine import quarantine_bad_rows, save_quarantine
+from src.schema_drift import detect_schema_drift, save_schema_snapshot
+from src.dashboard_ui import (
+    dashboard_hero,
+    empty_state,
+    how_it_works,
+    page_footer,
+    page_intro,
+    panel_start,
+    quarantine_panel,
+    section,
+    stat_grid,
+    themed_table,
+    upload_zone,
+)
+from src.app_shell import init_theme, inject_css, render_app_header
+from src.auth_ui import render_auth_page
+from src.validator import apply_validation_rules
+
+st.set_page_config(
+    page_title="DataSentinel",
+    page_icon=_FAVICON if os.path.exists(_FAVICON) else "🔷",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
+authenticator, _auth_config = get_authenticator()
+init_theme("dark")
 
-def dashboard_hero(*, has_data: bool = False) -> None:
-    status = "Pipeline ready" if has_data else "Ready to ingest"
+# ══════════════════════════════════════════════════════════════════
+# AUTH
+# ══════════════════════════════════════════════════════════════════
+if st.session_state.get("authentication_status") is not True:
+    inject_css(login=True)
+    if "auth_page" not in st.session_state:
+        st.session_state["auth_page"] = "login"
+    render_auth_page()
+    st.stop()
+
+# ══════════════════════════════════════════════════════════════════
+# APP SHELL
+# ══════════════════════════════════════════════════════════════════
+inject_css(login=False)
+
+if "app_page" not in st.session_state:
+    st.session_state["app_page"] = "dashboard"
+
+current_user = st.session_state.get("username", "")
+user_name = st.session_state.get("name", current_user)
+user_email = st.session_state.get("email", "")
+app_page = st.session_state.get("app_page", "dashboard")
+
+# Paint shell first so Streamlit can replace the login DOM before Azure I/O
+render_app_header(user_name, current_user, user_email, "main_theme", "main_logout")
+
+if not st.session_state.get("_workspace_hydrated"):
     st.markdown(
-        f"""
-<div class="ui-hero ui-fade">
-  <div class="ui-hero-copy">
-    <p class="ui-hero-kicker">Data Quality Command Center</p>
-    <p class="ui-hero-title">Monitor, validate, and trust every dataset</p>
-    <p class="ui-hero-lede">Upload files, quarantine bad rows, and track quality trends in one place.</p>
-  </div>
-  <div class="ui-hero-status">
-    <div class="ui-status"><span class="ui-status-dot"></span>{html.escape(status)}</div>
-  </div>
-</div>
-<div class="ui-mobile-wordmark" aria-hidden="true">DataSentinel</div>
-""",
+        '<div class="ui-boot-panel" role="status">'
+        '<div class="ui-boot-card"><p>Loading workspace…</p></div>'
+        "</div>",
         unsafe_allow_html=True,
     )
+    st.session_state["_workspace_hydrated"] = True
+    st.rerun()
+
+config = load_config("config/pipeline_config.yaml")
+trend_df = get_quality_trend(config, current_user)
+has_history = not trend_df.empty
 
 
-def how_it_works() -> None:
-    steps = "".join(
-        f'<li class="ui-how-step">'
-        f'<div class="ui-how-inner">'
-        f'<span class="ui-how-num" aria-hidden="true">{n}</span>'
-        f'<span class="ui-how-body">'
-        f'<strong class="ui-how-title">{html.escape(title)}</strong>'
-        f'<span class="ui-how-desc">{html.escape(body)}</span>'
-        f"</span></div></li>"
-        for n, title, body in HOW_IT_WORKS
-    )
-    st.markdown(
-        f'<div class="ui-how ui-fade">'
-        f'<p class="ui-how-kicker">How it works</p>'
-        f'<ol class="ui-how-grid" aria-label="How it works">{steps}</ol>'
-        f"</div>",
-        unsafe_allow_html=True,
-    )
+def _run_pipeline(uploaded_file):
+    temp_path = resolve_path(os.path.join("data", "raw", uploaded_file.name))
+    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+    with open(temp_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    st.success(f"Uploaded **{uploaded_file.name}**")
 
-
-def page_intro(title: str, subtitle: str = "") -> None:
-    sub = f"<p>{html.escape(subtitle)}</p>" if subtitle else ""
-    st.markdown(
-        f'<div class="ui-page-intro ui-fade"><h1>{html.escape(title)}</h1>{sub}</div>'
-        f'<div class="ui-mobile-wordmark" aria-hidden="true">DataSentinel</div>',
-        unsafe_allow_html=True,
-    )
-
-
-def stat_grid(items: list[tuple[str, str | int | float, str]]) -> None:
-    st.markdown('<div class="ui-stat-anchor" aria-hidden="true"></div>', unsafe_allow_html=True)
-    cols = st.columns(len(items), gap="medium")
-    for col, (label, value, hint) in zip(cols, items):
-        with col:
-            st.markdown(
-                f'<div class="ui-stat ui-fade">'
-                f'<span class="ui-stat-label">{html.escape(str(label))}</span>'
-                f'<span class="ui-stat-value">{html.escape(str(value))}</span>'
-                f'<span class="ui-stat-hint">{html.escape(str(hint))}</span></div>',
-                unsafe_allow_html=True,
-            )
-
-
-def section(title: str, subtitle: str = "") -> None:
-    sub = f"<p>{html.escape(subtitle)}</p>" if subtitle else ""
-    st.markdown(
-        f'<div class="ui-section"><h3>{html.escape(title)}</h3>{sub}</div>',
-        unsafe_allow_html=True,
-    )
-
-
-def panel_start() -> None:
-    st.markdown('<div class="ui-panel-anchor" aria-hidden="true"></div>', unsafe_allow_html=True)
-
-
-def upload_zone() -> None:
-    """No-op: the styled st.file_uploader dropzone is the single upload component."""
-    return
-
-
-def empty_state(title: str, body: str, *, compact: bool = False) -> None:
-    icon = crystal_svg("sm", animated=False, glow=True) if compact else ""
-    icon_html = (
-        f'<div style="display:flex;justify-content:center;margin-bottom:8px">{icon}</div>'
-        if icon
-        else ""
-    )
-    st.markdown(
-        f'<div class="ui-empty"><h4>{html.escape(title)}</h4>{icon_html}'
-        f'<p>{html.escape(body)}</p></div>',
-        unsafe_allow_html=True,
-    )
-
-
-def themed_table(df: pd.DataFrame, *, max_rows: int | None = 20) -> None:
-    """Theme-matched HTML table — avoids Streamlit's pure-black dataframe grid."""
-    if df is None or df.empty:
-        empty_state("No records", "Nothing to show yet.", compact=True)
-        return
-
-    view = df.head(max_rows) if max_rows else df
-    headers = "".join(f"<th>{html.escape(str(c))}</th>" for c in view.columns)
-    rows: list[str] = []
-    for _, row in view.iterrows():
-        cells = "".join(f"<td>{html.escape(str(v))}</td>" for v in row.tolist())
-        rows.append(f"<tr>{cells}</tr>")
-    st.markdown(
-        f'<div class="ui-table-wrap"><table class="ui-table">'
-        f'<thead><tr>{headers}</tr></thead>'
-        f'<tbody>{"".join(rows)}</tbody></table></div>',
-        unsafe_allow_html=True,
-    )
-
-
-def load_latest_quarantine(config: dict) -> tuple[pd.DataFrame, str]:
-    """Return the newest quarantine CSV and its filename, or empty."""
     try:
-        folder = resolve_path(config.get("output", {}).get("quarantine_path", "data/quarantine/"))
-        if not os.path.isdir(folder):
-            return pd.DataFrame(), ""
-        files = sorted(
-            glob(os.path.join(folder, "quarantine_*.csv")),
-            key=os.path.getmtime,
-            reverse=True,
-        )
-        if not files:
-            return pd.DataFrame(), ""
-        path = files[0]
-        return pd.read_csv(path), os.path.basename(path)
-    except Exception:
-        return pd.DataFrame(), ""
-
-
-def quarantine_panel(config: dict, live_df: pd.DataFrame | None = None) -> None:
-    """Quarantine section showing current run bad rows, or empty state if none."""
-    section("Quarantine", "Rows that failed critical validation rules")
-    
-    if live_df is None or live_df.empty:
-        empty_state(
-            "No quarantined rows",
-            "When validation fails critical rules, bad rows land here for review.",
-            compact=True,
-        )
+        with st.spinner("Running validation pipeline…"):
+            df, metadata = load_file(temp_path)
+            profile = profile_dataframe(df, config)
+            violations, summary = apply_validation_rules(df, config)
+            clean_df, quarantined_df = quarantine_bad_rows(df, violations, config)
+            row_pass_rate = (len(clean_df) / len(df) * 100.0) if len(df) > 0 else 100.0
+            profile["overall_quality_score"] = round(min(profile["overall_quality_score"], row_pass_rate), 1)
+            clean_report = verify_clean_data(clean_df, config)
+            save_quarantine(quarantined_df, config, uploaded_file.name)
+            save_clean_data(clean_df, config, uploaded_file.name)
+            anomalies = detect_statistical_anomalies(df, profile, config)
+            df_dtypes = {col: str(df[col].dtype) for col in df.columns}
+            drift_result = detect_schema_drift(
+                list(df.columns), df_dtypes, uploaded_file.name, current_user
+            )
+            save_schema_snapshot(
+                list(df.columns), df_dtypes, config, uploaded_file.name, current_user
+            )
+            save_pipeline_run(
+                metadata=metadata,
+                profile=profile,
+                validation_summary=summary,
+                anomalies=anomalies,
+                drift_result=drift_result,
+                config=config,
+                username=current_user,
+            )
+    except Exception as exc:
+        st.error(f"Pipeline failed: {exc}")
         return
 
-    st.caption(f"Showing {len(live_df)} rows · current run")
-    with st.expander(f"Quarantined rows ({len(live_df)})", expanded=False):
-        themed_table(live_df, max_rows=100)
+    section("Validation results", f"Quality score: {profile['overall_quality_score']}%")
+    stat_grid([
+        ("Quality score", f"{profile['overall_quality_score']}%", "Overall health"),
+        ("Clean rows", clean_report["rows"], "Passed validation"),
+        ("Quarantined", len(quarantined_df), "Failed rules"),
+        ("Null cells", clean_report["null_cells"], "In clean output"),
+    ])
 
+    if clean_report["is_fully_clean"]:
+        st.success("Dataset verified — no nulls in required columns.")
+    else:
+        st.warning(f"{clean_report['null_cells']} null cells remain in clean output.")
 
-def page_footer() -> None:
-    st.markdown(
-        '<div class="ui-footer">DataSentinel · Enterprise data quality</div>',
-        unsafe_allow_html=True,
+    section("Column health", "Null rates and status for every column")
+    col_df = pd.DataFrame([
+        {
+            "Column": col,
+            "Type": d["data_type"],
+            "Null %": f"{round(d['null_percentage'] * 100, 1)}%",
+            "Status": d["severity"],
+        }
+        for col, d in profile["column_profiles"].items()
+    ])
+    themed_table(col_df, max_rows=50)
+
+    section("Cleaning summary")
+    before_nulls = count_null_cells(df, config, required_only=True)
+    stat_grid([
+        ("Input rows", len(df), "Original dataset"),
+        ("Nulls before", before_nulls, "Required columns"),
+        ("Nulls after", clean_report["null_cells"], "After cleaning"),
+        ("Removed", len(quarantined_df), "Quarantined rows"),
+    ])
+
+    if anomalies:
+        section("Anomalies detected")
+        themed_table(pd.DataFrame(anomalies)[["column", "value", "z_score", "column_mean"]], max_rows=50)
+
+    # Always show quarantine after a run (empty state if none)
+    quarantine_panel(config, live_df=quarantined_df)
+
+    if drift_result.get("drift_detected"):
+        st.warning("Schema drift detected since last upload.")
+        if drift_result.get("added_columns"):
+            st.write("Added:", drift_result["added_columns"])
+        if drift_result.get("removed_columns"):
+            st.write("Removed:", drift_result["removed_columns"])
+
+    st.download_button(
+        "Download clean CSV",
+        clean_df.to_csv(index=False).encode("utf-8"),
+        file_name=f"clean_{uploaded_file.name}",
+        mime="text/csv",
+        use_container_width=True,
+        type="primary",
     )
+
+
+def render_dashboard_page() -> None:
+    # Top section: Upload dataset (Left) and Hero Command Center (Right) side-by-side
+    upload_col, hero_col = st.columns([1, 1], gap="large")
+
+    with upload_col:
+        panel_start()
+        uploaded_file = st.file_uploader(
+            "Upload",
+            type=["csv", "json", "xlsx"],
+            label_visibility="collapsed",
+            key="main_uploader",
+        )
+
+    with hero_col:
+        dashboard_hero(has_data=has_history)
+
+    # How it works is only shown when idle
+    if uploaded_file is None:
+        how_it_works()
+
+    # Metrics grid
+    if has_history:
+        stat_grid([
+            ("Total runs", len(trend_df), "Pipeline executions"),
+            ("Avg quality", f"{trend_df['quality_score'].mean():.1f}%", "Across all runs"),
+            ("Datasets", trend_df["file_name"].nunique(), "Unique files"),
+            ("Anomalies", int(trend_df["anomalies_found"].sum()), "Detected total"),
+        ])
+    else:
+        stat_grid([
+            ("Total runs", "0", "Upload to begin"),
+            ("Avg quality", "—", "No data yet"),
+            ("Datasets", "0", "Unique files"),
+            ("Anomalies", "0", "Detected"),
+        ])
+
+    # Idle dashboard quarantine panel (shows blank/empty state if no active validation run)
+    if uploaded_file is None:
+        quarantine_panel(config)
+
+    if uploaded_file is not None:
+        _run_pipeline(uploaded_file)
+
+
+def render_analytics_page() -> None:
+    page_intro("Analytics", "Quality trends across previous datasets and runs.")
+    if not has_history:
+        empty_state("No analytics yet", "Upload a dataset from Dashboard to build your first trend charts.")
+        return
+
+    try:
+        selected = st.selectbox(
+            "Filter by dataset",
+            ["All datasets"] + sorted(trend_df["file_name"].unique()),
+            key="analytics_dataset_filter",
+        )
+        chart_df = trend_df if selected == "All datasets" else trend_df[trend_df["file_name"] == selected]
+        threshold = config.get("quality", {}).get("min_quality_score", 70)
+        render_quality_trend_charts(chart_df, threshold=threshold, key_prefix="analytics_trend")
+    except Exception as exc:
+        st.warning(f"Could not load analytics: {exc}")
+
+
+def render_history_page() -> None:
+    page_intro("History", "Full pipeline run history for your workspace.")
+    if not has_history:
+        empty_state("No history yet", "Runs will appear here after you upload and validate a dataset.")
+        return
+
+    selected = st.selectbox(
+        "Filter by dataset",
+        ["All datasets"] + sorted(trend_df["file_name"].unique()),
+        key="history_dataset_filter",
+    )
+    history_df = trend_df if selected == "All datasets" else trend_df[trend_df["file_name"] == selected]
+    display = history_df.sort_values("run_timestamp", ascending=False).copy()
+    themed_table(display, max_rows=100)
+
+
+if app_page == "analytics":
+    render_analytics_page()
+elif app_page == "history":
+    render_history_page()
+else:
+    render_dashboard_page()
+
+page_footer()
