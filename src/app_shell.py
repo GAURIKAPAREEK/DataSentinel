@@ -14,11 +14,9 @@ def init_theme(default: str = "dark") -> None:
         st.session_state.theme = default
 
 
-import importlib
 import src.ui.stylesheet
 
 def inject_css(*, login: bool = False) -> None:
-    importlib.reload(src.ui.stylesheet)
     css = src.ui.stylesheet.build_global_css(login=login)
     if hasattr(st, "html"):
         st.html(css)
@@ -33,10 +31,8 @@ def render_app_header(
     theme_key: str = "hdr_theme",
     logout_key: str = "hdr_logout",
 ) -> None:
-    import importlib
-    import src.ui.components.header
-    importlib.reload(src.ui.components.header)
-    src.ui.components.header.render_header(name, username, email, theme_key=theme_key, logout_key=logout_key)
+    from src.ui.components import header as header_module
+    header_module.render_header(name, username, email, theme_key=theme_key, logout_key=logout_key)
 
 
 def toggle_theme(key: str) -> None:
