@@ -1046,7 +1046,8 @@ div[data-baseweb="popover"] .ui-profile-val,
     font-weight: 600 !important;
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
-    word-break: break-all !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
     display: inline-block !important;
 }}
 .ui-val-name {{
@@ -2234,17 +2235,58 @@ def _responsive() -> str:
     }
     /* Fix mobile popover offset position (keep on-screen, anchored under the header) */
     div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]),
-    [data-testid="stPopoverBody"] {
+    div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]) > div,
+    [data-testid="stPopoverBody"],
+    [data-testid="stPopoverBody"] > div[role="tooltip"] {
         position: fixed !important;
+        inset: auto 8px auto auto !important;
         top: 72px !important;
-        right: 12px !important;
+        right: 8px !important;
         left: auto !important;
         bottom: auto !important;
-        width: calc(100vw - 24px) !important;
-        max-width: 300px !important;
+        transform: none !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 360px !important;
         max-height: calc(100vh - 96px) !important;
         overflow-y: auto !important;
         z-index: 999999 !important;
+    }
+    /* Give profile rows/chips full width so the email doesn't wrap and chips stay on one line */
+    [data-testid="stPopoverBody"] .ui-profile-card {
+        min-width: 0 !important;
+        gap: 12px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1px !important;
+        margin-bottom: 8px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-key {
+        min-width: 0 !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-val {
+        font-size: 12px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-chips {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 5px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-chips span {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+    /* Dim the page behind the popover so overlap reads as an intentional modal */
+    body:has(div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]))::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 8, 16, 0.55);
+        backdrop-filter: blur(2px);
+        z-index: 999998;
     }
     /* Center the 'How it works' kicker on mobile */
     .ui-how-kicker {
