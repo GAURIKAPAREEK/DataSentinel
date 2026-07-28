@@ -54,7 +54,11 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
     treat_empty = cleaning.get("treat_empty_as_null", True)
     condition = "is_null_or_empty" if treat_empty else "is_null"
 
-    covered = {(rule["column"], rule["condition"]) for rule in rules if "column" in rule}
+    covered_nulls = {
+        rule["column"]
+        for rule in rules
+        if "column" in rule and rule.get("condition") in ("is_null", "is_null_or_empty")
+    }
 
     if mode == "strict":
         target_columns = list(df.columns)
@@ -64,8 +68,7 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
         return rules
 
     for col in target_columns:
-        key = (col, condition)
-        if key in covered:
+        if col in covered_nulls:
             continue
         rules.append(
             {
@@ -76,7 +79,7 @@ def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
                 "severity": "CRITICAL",
             }
         )
-        covered.add(key)
+        covered_nulls.add(col)
 
     return rules
 
