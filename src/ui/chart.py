@@ -27,14 +27,14 @@ def chart_layout(title: str = "") -> dict:
         "paper_bgcolor": v["--ui-chart-bg"],
         "plot_bgcolor": v["--ui-chart-bg"],
         "font": {"family": "Outfit, sans-serif", "color": text, "size": 11},
-        "margin": {"l": 45, "r": 25, "t": 35, "b": 80},
-        "height": 350,
+        "margin": {"l": 45, "r": 25, "t": 35, "b": 90},
+        "height": 360,
         "xaxis": dict(axis, tickangle=0, nticks=6),
         "yaxis": dict(axis),
         "legend": {
             "orientation": "h",
             "yanchor": "top",
-            "y": -0.18,
+            "y": -0.16,
             "xanchor": "center",
             "x": 0.5,
             "title": {"text": ""},
@@ -121,11 +121,28 @@ def render_quality_trend_charts(
         else:
             x_col = "run_timestamp"
 
-        color_col = (
-            "file_name"
-            if "file_name" in work.columns and work["file_name"].nunique() > 1
-            else None
-        )
+        def truncate_name(name):
+            if not isinstance(name, str):
+                return name
+            if len(name) <= 22:
+                return name
+            parts = name.split(".")
+            if len(parts) > 1:
+                base, ext = ".".join(parts[:-1]), parts[-1]
+                if len(base) > 15:
+                    return base[:12] + "..." + "." + ext
+            return name[:19] + "..."
+
+        if "file_name" in work.columns:
+            work["Dataset"] = work["file_name"].apply(truncate_name)
+            color_col = (
+                "Dataset"
+                if work["Dataset"].nunique() > 1
+                else None
+            )
+        else:
+            color_col = None
+
         color_map = {}
         if color_col:
             unique_files = list(work[color_col].unique())
@@ -141,9 +158,24 @@ def render_quality_trend_charts(
                 markers=True,
                 color_discrete_map=color_map if color_map else None,
                 color_discrete_sequence=palette if not color_map else None,
-                labels={"file_name": "", "run_label": "", "quality_score": ""},
+                labels={"Dataset": "", "run_label": "", "quality_score": ""},
+                hover_data={"file_name": True, "Dataset": False} if "file_name" in work.columns else None,
             )
             fig.update_traces(line=dict(width=2.5), marker=dict(size=9), cliponaxis=False)
+            if color_col:
+                fig.add_scatter(
+                    x=work[x_col],
+                    y=work["quality_score"],
+                    mode="lines",
+                    line=dict(
+                        color="rgba(255, 255, 255, 0.35)" if theme == "dark" else "rgba(0, 0, 0, 0.25)",
+                        width=2,
+                        dash="dash"
+                    ),
+                    showlegend=False,
+                    hoverinfo="skip"
+                )
+                fig.data = (fig.data[-1], *fig.data[:-1])
             if threshold is not None:
                 fig.add_hline(
                     y=float(threshold),
@@ -192,9 +224,24 @@ def render_quality_trend_charts(
                 markers=True,
                 color_discrete_map=color_map if color_map else None,
                 color_discrete_sequence=palette if not color_map else None,
-                labels={"file_name": "", "run_label": "", "anomalies_found": ""},
+                labels={"Dataset": "", "run_label": "", "anomalies_found": ""},
+                hover_data={"file_name": True, "Dataset": False} if "file_name" in work.columns else None,
             )
             fig2.update_traces(line=dict(width=2.5), marker=dict(size=9), cliponaxis=False)
+            if color_col:
+                fig2.add_scatter(
+                    x=work[x_col],
+                    y=work["anomalies_found"],
+                    mode="lines",
+                    line=dict(
+                        color="rgba(255, 255, 255, 0.35)" if theme == "dark" else "rgba(0, 0, 0, 0.25)",
+                        width=2,
+                        dash="dash"
+                    ),
+                    showlegend=False,
+                    hoverinfo="skip"
+                )
+                fig2.data = (fig2.data[-1], *fig2.data[:-1])
             layout2 = chart_layout("Anomalies per run")
             if max_a == 0:
                 y_lower, y_upper = -0.5, 5
