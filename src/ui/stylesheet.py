@@ -1061,7 +1061,7 @@ div[data-baseweb="popover"] .ui-profile-val,
     color: var(--ui-text) !important;
 }}
 .ui-val-username {{ color: var(--ui-primary) !important; -webkit-text-fill-color: var(--ui-primary) !important; }}
-.ui-profile-chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; width: 100%; text-align: left; }}
+.ui-profile-chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ui-border); width: 100%; text-align: left; }}
 .ui-profile-chips span {{
     font-size: 11px; font-weight: 600; color: var(--ui-primary);
     background: var(--ui-accent-soft); border: 1px solid var(--ui-border);
@@ -1073,7 +1073,7 @@ div[data-baseweb="popover"] [data-testid="stButton"],
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    margin: 14px auto 0 auto !important;
+    margin: 8px auto 0 auto !important;
 }}
 div[data-baseweb="popover"] [data-testid="stButton"] button,
 [data-testid="stPopoverBody"] [data-testid="stButton"] button {{
