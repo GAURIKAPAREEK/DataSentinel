@@ -49,6 +49,12 @@ init_theme("dark")
 # ══════════════════════════════════════════════════════════════════
 # AUTH
 # ══════════════════════════════════════════════════════════════════
+if not st.session_state.get("authentication_status"):
+    try:
+        authenticator.login(location='unrendered')
+    except Exception:
+        pass
+
 if st.session_state.get("authentication_status") is not True:
     inject_css(login=True)
     if "auth_page" not in st.session_state:
@@ -67,6 +73,9 @@ if "app_page" not in st.session_state:
 current_user = st.session_state.get("username", "")
 user_name = st.session_state.get("name", current_user)
 user_email = st.session_state.get("email", "")
+if not user_email and current_user:
+    user_email = _auth_config.get("credentials", {}).get("usernames", {}).get(current_user, {}).get("email", "")
+    st.session_state["email"] = user_email
 app_page = st.session_state.get("app_page", "dashboard")
 
 # Paint shell first so Streamlit can replace the login DOM before Azure I/O
