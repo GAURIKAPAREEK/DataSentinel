@@ -733,6 +733,11 @@ div[data-baseweb="popover"] .ui-profile-val,
     color: var(--ui-text) !important;
     -webkit-text-fill-color: var(--ui-text) !important;
 }}
+div[data-baseweb="popover"] .ui-val-username,
+[data-testid="stPopoverBody"] .ui-val-username {{
+    color: var(--ui-primary) !important;
+    -webkit-text-fill-color: var(--ui-primary) !important;
+}}
 div[data-baseweb="popover"] ul[role="listbox"],
 div[data-baseweb="popover"] ul[role="listbox"] li,
 div[data-baseweb="menu"] li,
@@ -1055,6 +1060,7 @@ div[data-baseweb="popover"] .ui-profile-val,
     font-weight: 700 !important;
     color: var(--ui-text) !important;
 }}
+.ui-val-username {{ color: var(--ui-primary) !important; -webkit-text-fill-color: var(--ui-primary) !important; }}
 .ui-profile-chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; width: 100%; text-align: left; }}
 .ui-profile-chips span {{
     font-size: 11px; font-weight: 600; color: var(--ui-primary);
@@ -1062,9 +1068,7 @@ div[data-baseweb="popover"] .ui-profile-val,
     border-radius: 999px; padding: 4px 10px;
 }}
 div[data-baseweb="popover"] [data-testid="stButton"],
-[data-testid="stPopoverBody"] [data-testid="stButton"],
-.st-key-hdr_delete_account_btn,
-.stKey-hdr_delete_account_btn {{
+[data-testid="stPopoverBody"] [data-testid="stButton"] {{
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
@@ -1072,9 +1076,7 @@ div[data-baseweb="popover"] [data-testid="stButton"],
     margin: 14px auto 0 auto !important;
 }}
 div[data-baseweb="popover"] [data-testid="stButton"] button,
-[data-testid="stPopoverBody"] [data-testid="stButton"] button,
-.st-key-hdr_delete_account_btn button,
-.stKey-hdr_delete_account_btn button {{
+[data-testid="stPopoverBody"] [data-testid="stButton"] button {{
     width: 100% !important;
     margin: 0 auto !important;
     text-align: center !important;
@@ -2251,7 +2253,7 @@ def _responsive() -> str:
         overflow-y: auto !important;
         z-index: 999999 !important;
     }
-    /* Give profile rows/chips full width so the email doesn't wrap and chips stay on one line */
+    /* Keep profile card compact and legible on small screens */
     [data-testid="stPopoverBody"] .ui-profile-card {
         min-width: 0 !important;
         flex-direction: column !important;
@@ -2275,6 +2277,15 @@ def _responsive() -> str:
     }
     [data-testid="stPopoverBody"] .ui-profile-chips {
         margin-top: 6px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 5px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-chips span {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
     }
     /* Pull the delete button up and shrink it to a centered pill so it sits under the gap between the two chips */
     [data-testid="stPopoverBody"] [data-testid="stButton"] {
@@ -2286,17 +2297,6 @@ def _responsive() -> str:
         width: auto !important;
         padding-left: 20px !important;
         padding-right: 20px !important;
-    }
-    [data-testid="stPopoverBody"] .ui-profile-chips {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        gap: 5px !important;
-    }
-    [data-testid="stPopoverBody"] .ui-profile-chips span {
-        font-size: 10px !important;
-        padding: 4px 8px !important;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
     }
     /* Dim the page behind the popover so overlap reads as an intentional modal */
     body:has(div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]))::after {
