@@ -2085,7 +2085,7 @@ def _responsive() -> str:
 .ui-mobile-wordmark { display: none; }
 
 /* --- Desktop: hide hamburger column completely --- */
-@media (min-width: 901px) {
+@media (min-width: 641px) {
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-hdr-burger),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-hdr-burger) {
         display: none !important;
@@ -2104,8 +2104,8 @@ def _responsive() -> str:
     }
 }
 
-/* --- Mobile (<=900px): burger visible, inline nav hidden --- */
-@media (max-width: 900px) {
+/* --- Mobile (<=640px): burger visible, inline nav hidden --- */
+@media (max-width: 640px) {
     /* Hide the inline nav column (dashboard/analytics/history buttons) */
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="column"]:has(.ui-nav-row),
     .block-container:has(.ui-hdr-anchor) div[data-testid="stHorizontalBlock"]:has(.ui-brand) > [data-testid="stColumn"]:has(.ui-nav-row) {
@@ -2232,14 +2232,18 @@ def _responsive() -> str:
         max-width: none !important;
         flex: 0 0 auto !important;
     }
-    /* Fix mobile popover offset position (keep on-screen) */
+    /* Fix mobile popover offset position (keep on-screen, anchored under the header) */
     div[data-baseweb="popover"]:has([data-testid="stPopoverBody"]),
     [data-testid="stPopoverBody"] {
         position: fixed !important;
+        top: 72px !important;
         right: 12px !important;
         left: auto !important;
+        bottom: auto !important;
         width: calc(100vw - 24px) !important;
-        max-width: 320px !important;
+        max-width: 300px !important;
+        max-height: calc(100vh - 96px) !important;
+        overflow-y: auto !important;
         z-index: 999999 !important;
     }
     /* Center the 'How it works' kicker on mobile */
