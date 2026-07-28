@@ -9,7 +9,7 @@ from src.azure_sql import create_table_if_not_exists, get_engine
 
 @st.cache_data(ttl=15, show_spinner=False)
 def _fetch_quality_trend(username: str, config_fingerprint: str) -> pd.DataFrame:
-    """Cached DB fetch — falls back to all workspace runs if user-specific runs are empty."""
+    """Cached DB fetch for user-specific runs."""
     del config_fingerprint
     from src.ingestion import load_config
 
@@ -28,17 +28,6 @@ def _fetch_quality_trend(username: str, config_fingerprint: str) -> pd.DataFrame
         """
     )
     df = pd.read_sql(query, engine, params={"username": username})
-    if df.empty:
-        query_all = sqlalchemy.text(
-            """
-            SELECT run_timestamp, file_name, quality_score,
-                   anomalies_found, critical_violations,
-                   schema_drift_detected
-            FROM pipeline_runs
-            ORDER BY run_timestamp ASC
-            """
-        )
-        df = pd.read_sql(query_all, engine)
 
     if not df.empty:
         df["quality_score"] = pd.to_numeric(df["quality_score"], errors="coerce")
