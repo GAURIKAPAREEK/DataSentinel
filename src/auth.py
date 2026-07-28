@@ -302,6 +302,11 @@ def authenticate_user(username: str, password: str) -> tuple[bool, str]:
 
 def logout_user() -> None:
     """Clear session state and return to login (unified with custom auth)."""
+    try:
+        authenticator, _ = get_authenticator()
+        authenticator.cookie_controller.delete_cookie()
+    except Exception:
+        pass
     keys_to_clear = [
         "authentication_status",
         "name",
