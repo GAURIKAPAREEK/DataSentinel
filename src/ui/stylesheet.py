@@ -2241,36 +2241,31 @@ def _responsive() -> str:
     [data-testid="stPopoverBody"],
     [data-testid="stPopoverBody"] > div[role="tooltip"] {
         position: fixed !important;
-        inset: auto 8px auto auto !important;
+        inset: auto 6px auto auto !important;
         top: 72px !important;
-        right: 8px !important;
+        right: 6px !important;
         left: auto !important;
         bottom: auto !important;
         transform: none !important;
-        width: calc(100vw - 16px) !important;
-        max-width: 360px !important;
+        width: calc(100vw - 12px) !important;
+        max-width: 400px !important;
         max-height: calc(100vh - 96px) !important;
         overflow-y: auto !important;
         z-index: 999999 !important;
     }
-    /* Keep profile card compact and legible on small screens */
+    /* Match the desktop inline layout: avatar beside text, label + value on one line */
     [data-testid="stPopoverBody"] .ui-profile-card {
         min-width: 0 !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 8px !important;
+        gap: 12px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-avatar {
-        margin-bottom: 2px !important;
-    }
-    [data-testid="stPopoverBody"] .ui-profile-row {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1px !important;
-        margin-bottom: 6px !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 16px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-key {
-        min-width: 0 !important;
+        min-width: 60px !important;
+        font-size: 10px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-val {
         font-size: 12px !important;
