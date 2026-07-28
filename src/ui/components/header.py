@@ -86,13 +86,13 @@ def render_header(
         with profile_c:
             with st.popover(short_name, key="hdr_profile_v7", use_container_width=False):
                 profile_html = (
-                    f'<div class="ui-profile-card" style="display:flex!important;gap:16px!important;padding:8px 4px 4px!important;min-width:270px!important;">'
-                    f'<div class="ui-profile-avatar" style="width:48px!important;height:48px!important;border-radius:14px!important;background:var(--ui-gradient)!important;color:#ffffff!important;display:flex!important;align-items:center!important;justify-content:center!important;font-weight:700!important;font-size:18px!important;flex-shrink:0!important;margin-top:2px!important;box-shadow:0 4px 12px rgba(0,0,0,0.2)!important;">{html.escape(initials)}</div>'
-                    f'<div class="ui-profile-body" style="flex:1!important;min-width:0!important;">'
+                    f'<div class="ui-profile-card">'
+                    f'<div class="ui-profile-avatar">{html.escape(initials)}</div>'
+                    f'<div class="ui-profile-body">'
                     f'<div class="ui-profile-row"><span class="ui-profile-key">Name:</span><span class="ui-profile-val ui-val-name">{html.escape(safe_name)}</span></div>'
                     f'<div class="ui-profile-row"><span class="ui-profile-key">Email:</span><span class="ui-profile-val">{html.escape(display_email)}</span></div>'
-                    f'<div class="ui-profile-row"><span class="ui-profile-key">Username:</span><span class="ui-profile-val" style="color:var(--ui-primary)!important;">@{html.escape(username or "user")}</span></div>'
-                    f'<div class="ui-profile-chips" style="display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin-top:12px!important;padding-top:10px!important;border-top:1px solid var(--ui-border)!important;">'
+                    f'<div class="ui-profile-row"><span class="ui-profile-key">Username:</span><span class="ui-profile-val ui-val-username">@{html.escape(username or "user")}</span></div>'
+                    f'<div class="ui-profile-chips">'
                     f'<span>Workspace member</span>'
                     f'<span>Quality pipeline access</span>'
                     f'</div>'
