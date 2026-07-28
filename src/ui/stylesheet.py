@@ -2254,19 +2254,38 @@ def _responsive() -> str:
     /* Give profile rows/chips full width so the email doesn't wrap and chips stay on one line */
     [data-testid="stPopoverBody"] .ui-profile-card {
         min-width: 0 !important;
-        gap: 12px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-avatar {
+        margin-bottom: 2px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-row {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 1px !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 6px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-key {
         min-width: 0 !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-val {
         font-size: 12px !important;
+    }
+    [data-testid="stPopoverBody"] .ui-profile-chips {
+        margin-top: 6px !important;
+    }
+    /* Pull the delete button up and shrink it to a centered pill so it sits under the gap between the two chips */
+    [data-testid="stPopoverBody"] [data-testid="stButton"] {
+        width: auto !important;
+        max-width: 230px !important;
+        margin: 8px auto 0 auto !important;
+    }
+    [data-testid="stPopoverBody"] [data-testid="stButton"] button {
+        width: auto !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
     }
     [data-testid="stPopoverBody"] .ui-profile-chips {
         flex-wrap: nowrap !important;
