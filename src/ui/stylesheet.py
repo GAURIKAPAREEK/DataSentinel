@@ -1067,13 +1067,17 @@ div[data-baseweb="popover"] .ui-profile-val,
     background: var(--ui-accent-soft); border: 1px solid var(--ui-border);
     border-radius: 999px; padding: 4px 10px;
 }}
+div[data-baseweb="popover"] [data-testid="stVerticalBlock"],
+[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {{
+    gap: 2px !important;
+}}
 div[data-baseweb="popover"] [data-testid="stButton"],
 [data-testid="stPopoverBody"] [data-testid="stButton"] {{
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    margin: 8px auto 0 auto !important;
+    margin: 0 auto !important;
 }}
 div[data-baseweb="popover"] [data-testid="stButton"] button,
 [data-testid="stPopoverBody"] [data-testid="stButton"] button {{
@@ -2286,7 +2290,7 @@ def _responsive() -> str:
     [data-testid="stPopoverBody"] [data-testid="stButton"] {
         width: auto !important;
         max-width: 230px !important;
-        margin: 8px auto 0 auto !important;
+        margin: 2px auto 0 auto !important;
     }
     [data-testid="stPopoverBody"] [data-testid="stButton"] button {
         width: auto !important;
