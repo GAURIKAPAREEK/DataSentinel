@@ -2,6 +2,7 @@ streamlit>=1.39.0
 pandas
 plotly
 openpyxl
+psycopg[binary]
 psycopg2-binary
 sqlalchemy
 pyyaml
