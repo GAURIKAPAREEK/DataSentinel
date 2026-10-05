@@ -616,8 +616,7 @@ def _inputs() -> str:
     border-color: var(--ui-primary) !important;
     box-shadow: var(--ui-focus) !important;
 }}
-[data-testid="stTextInput"] [data-baseweb="base-input"],
-[data-testid="stTextInput"] > div > div > div {{
+[data-testid="stTextInput"] [data-baseweb="base-input"] {{
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
