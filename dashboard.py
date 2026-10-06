@@ -2,6 +2,7 @@ import os
 import sys
 
 import pandas as pd
+from src.cleaning import count_null_cells, save_clean_data, standardize_data, verify_clean_data
 import streamlit as st
 
 sys.path.append(os.path.dirname(__file__))
@@ -106,6 +107,7 @@ def _run_pipeline(uploaded_file):
     try:
         with st.spinner("Running validation pipeline…"):
             df, metadata = load_file(temp_path)
+            df = standardize_data(df) 
             profile = profile_dataframe(df, config)
             violations, summary = apply_validation_rules(df, config)
             clean_df, quarantined_df = quarantine_bad_rows(df, violations, config)
