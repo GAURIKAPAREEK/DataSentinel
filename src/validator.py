@@ -26,9 +26,9 @@ def apply_validation_rules(df: pd.DataFrame, config: dict) -> tuple:
         threshold = rule["value"]
 
         if condition == "less_than":
-            failing_rows = df[df[col] < threshold]
+            failing_rows = df[pd.to_numeric(df[col], errors="coerce") < threshold]
         elif condition == "greater_than":
-            failing_rows = df[df[col] > threshold]
+            failing_rows = df[pd.to_numeric(df[col], errors="coerce") > threshold]
         elif condition == "is_null":
             failing_rows = df[df[col].isnull()]
         elif condition == "is_null_or_empty":
