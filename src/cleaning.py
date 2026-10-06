@@ -4,6 +4,16 @@ import pandas as pd
 
 from src.paths import resolve_path
 
+def standardize_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Duplicates hatao, text trim karo, City/Name ka format ek jaisa karo."""
+    df = df.copy()
+    for col in df.select_dtypes(include=["object", "string"]).columns:
+        df[col] = df[col].str.strip()
+    for col in df.columns:
+        if col.lower() in ("city", "name"):
+            df[col] = df[col].str.title()
+    return df.drop_duplicates().reset_index(drop=True)
+
 
 def _null_mask(series: pd.Series, treat_empty_as_null: bool) -> pd.Series:
     mask = series.isnull()
