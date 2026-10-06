@@ -10,7 +10,7 @@ _FAVICON = os.path.join(os.path.dirname(__file__), "assets", "brand", "favicon.p
 
 from src.anomaly_detector import detect_statistical_anomalies
 from src.auth import get_authenticator
-from src.azure_sql import fetch_login_history, save_login_event, save_pipeline_run
+from src.azure_sql import save_pipeline_run
 from src.cleaning import count_null_cells, fill_missing_values, save_clean_data, standardize_data, verify_clean_data
 from src.ui.chart import render_quality_trend_charts
 from src.ingestion import load_config, load_file
@@ -93,14 +93,6 @@ if not st.session_state.get("_workspace_hydrated"):
 
 config = load_config("config/pipeline_config.yaml")
 
-# Har naye login/session par is account ke naam se ek entry save hogi
-if current_user and not st.session_state.get("_login_logged"):
-    try:
-        save_login_event(config, current_user)
-    except Exception:
-        pass
-    st.session_state["_login_logged"] = True
-
 trend_df = get_quality_trend(config, current_user)
 has_history = not trend_df.empty
 
@@ -145,9 +137,14 @@ def _run_pipeline(uploaded_file):
                     username=current_user,
                 )
                 st.session_state["_last_saved_run"] = run_key
+                st.session_state["_refresh_after_save"] = True
     except Exception as exc:
         st.error(f"Pipeline failed: {exc}")
         return
+
+    # Nayi upload save hui hai -> ek baar rerun taaki upar ke counts turant update ho
+    if st.session_state.pop("_refresh_after_save", False):
+        st.rerun()
 
     section("Validation results", f"Quality score: {profile['overall_quality_score']}%")
     stat_grid([
@@ -231,16 +228,16 @@ def render_dashboard_page() -> None:
     # Metrics grid
     if has_history:
         stat_grid([
-            ("Total runs", len(trend_df), "Pipeline executions"),
-            ("Avg quality", f"{trend_df['quality_score'].mean():.1f}%", "Across all runs"),
-            ("Datasets", trend_df["file_name"].nunique(), "Unique files"),
+            ("Total uploads", len(trend_df), "Is account ki saari uploads"),
+            ("Avg quality", f"{trend_df['quality_score'].mean():.1f}%", "Across all uploads"),
+            ("Unique datasets", trend_df["file_name"].nunique(), "Alag-alag files"),
             ("Anomalies", int(trend_df["anomalies_found"].sum()), "Detected total"),
         ])
     else:
         stat_grid([
-            ("Total runs", "0", "Upload to begin"),
+            ("Total uploads", "0", "Upload to begin"),
             ("Avg quality", "—", "No data yet"),
-            ("Datasets", "0", "Unique files"),
+            ("Unique datasets", "0", "Alag-alag files"),
             ("Anomalies", "0", "Detected"),
         ])
 
@@ -252,27 +249,41 @@ def render_dashboard_page() -> None:
         _run_pipeline(uploaded_file)
 
 
-def _render_login_activity(table: bool = False) -> None:
-    try:
-        logins = fetch_login_history(config, current_user)
-        if table:
-            section("Login history", "Is account me kitni baar login hua")
-            themed_table(logins, max_rows=100)
-        else:
-            section("Login activity", "Is account ke saare logins")
-            stat_grid([
-                ("Total logins", len(logins), "All time"),
-                ("Last login", str(logins["login_timestamp"].iloc[0])[:16] if not logins.empty else "—", "Most recent"),
-            ])
-    except Exception as exc:
-        st.warning(f"Could not load login history: {exc}")
+def _time_ago(ts) -> str:
+    if pd.isna(ts):
+        return "—"
+    secs = int((pd.Timestamp.now() - ts).total_seconds())
+    if secs < 60:
+        return "just now"
+    if secs < 3600:
+        return f"{secs // 60} min ago"
+    if secs < 86400:
+        return f"{secs // 3600} hr ago"
+    return f"{secs // 86400} day ago" if secs // 86400 == 1 else f"{secs // 86400} days ago"
+
+
+def _upload_history_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Is account ki uploads: file name, kab upload hui (date + time), kitna pehle."""
+    d = df.sort_values("run_timestamp", ascending=False)
+    ts = pd.to_datetime(d["run_timestamp"], errors="coerce")
+    out = pd.DataFrame({
+        "File name": d["file_name"].values,
+        "Uploaded on": ts.dt.strftime("%d %b %Y").values,
+        "Time": ts.dt.strftime("%I:%M %p").values,
+        "Age": [_time_ago(t) for t in ts],
+    })
+    if "row_count" in d.columns:
+        out["Rows"] = d["row_count"].values
+    if "column_count" in d.columns:
+        out["Columns"] = d["column_count"].values
+    out["Quality"] = d["quality_score"].map(lambda x: "—" if pd.isna(x) else f"{x:.0f}%").values
+    return out
 
 
 def render_analytics_page() -> None:
     page_intro("Analytics", "Quality trends across previous datasets and runs.")
     if not has_history:
         empty_state("No analytics yet", "Upload a dataset from Dashboard to build your first trend charts.")
-        _render_login_activity()
         return
 
     try:
@@ -287,14 +298,14 @@ def render_analytics_page() -> None:
     except Exception as exc:
         st.warning(f"Could not load analytics: {exc}")
 
-    _render_login_activity()
+    section("Recent uploads", "Is account ki latest uploaded files")
+    themed_table(_upload_history_df(trend_df), max_rows=10)
 
 
 def render_history_page() -> None:
     page_intro("History", "Full pipeline run history for your workspace.")
     if not has_history:
         empty_state("No history yet", "Runs will appear here after you upload and validate a dataset.")
-        _render_login_activity(table=True)
         return
 
     selected = st.selectbox(
@@ -303,14 +314,8 @@ def render_history_page() -> None:
         key="history_dataset_filter",
     )
     history_df = trend_df if selected == "All datasets" else trend_df[trend_df["file_name"] == selected]
-    display = history_df.sort_values("run_timestamp", ascending=False).copy()
-    themed_table(display, max_rows=100)
-
-    try:
-        section("Login history", "Is account me kitni baar login hua")
-        themed_table(fetch_login_history(config, current_user), max_rows=100)
-    except Exception as exc:
-        st.warning(f"Could not load login history: {exc}")
+    section("Upload history", f"Is account ne ab tak {len(trend_df)} uploads kiye hain")
+    themed_table(_upload_history_df(history_df), max_rows=200)
 
 
 if app_page == "analytics":
