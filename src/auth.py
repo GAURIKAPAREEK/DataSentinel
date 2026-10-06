@@ -218,14 +218,16 @@ def register_user(
                 {"u": username, "n": name, "e": email, "p": hashed},
             )
             conn.commit()
-        _smtp_send_welcome_email(email, name, username)
+        sent, reason = _smtp_send_welcome_email(email, name, username)
+        st.session_state["welcome_email_warning"] = "" if sent else reason
         return True, "Account created. Sign in with your username and password."
 
     config = load_auth_config()
     usernames = config["credentials"]["usernames"]
     usernames[username] = {"name": name, "email": email, "password": hashed}
     if save_auth_config(config):
-        _smtp_send_welcome_email(email, name, username)
+        sent, reason = _smtp_send_welcome_email(email, name, username)
+        st.session_state["welcome_email_warning"] = "" if sent else reason
         return True, "Account created. Sign in with your username and password."
     return False, "Could not save account. Contact your administrator."
 
@@ -457,11 +459,17 @@ def _welcome_email_html(name: str, username: str) -> str:
 </html>"""
 
 
-def _smtp_send_welcome_email(to_email: str, name: str, username: str) -> None:
-    """Best-effort welcome email; never blocks the sign-up flow."""
+def _smtp_send_welcome_email(to_email: str, name: str, username: str) -> tuple[bool, str]:
+    """Welcome email bhejta hai. (sent, reason) return karta hai; sign-up kabhi block nahi hota."""
     try:
-        if not hasattr(st, "secrets") or "smtp" not in st.secrets or not to_email:
-            return
+        if not to_email:
+            return False, "No email address."
+        try:
+            has_smtp = "smtp" in st.secrets
+        except Exception:
+            has_smtp = False
+        if not has_smtp:
+            return False, "SMTP is not configured (add an [smtp] section in secrets)."
         smtp_cfg = st.secrets["smtp"]
         host = smtp_cfg["host"]
         port = int(smtp_cfg.get("port", 587))
@@ -491,10 +499,12 @@ def _smtp_send_welcome_email(to_email: str, name: str, username: str) -> None:
                 server.starttls()
                 server.login(username_smtp, password_smtp)
                 server.send_message(msg)
-    except Exception:
+        return True, "Welcome email sent."
+    except Exception as exc:
         import traceback
         print("SMTP Error sending welcome email:")
         traceback.print_exc()
+        return False, f"{type(exc).__name__}: {exc}"
 
 
 def _smtp_send_password_changed_email(to_email: str) -> None:
@@ -724,4 +734,3 @@ def delete_user_permanently(username: str) -> None:
 
     # 4. Logout the user
     logout_user()
-
