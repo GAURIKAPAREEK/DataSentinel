@@ -19,7 +19,7 @@ def _fetch_quality_trend(username: str, config_fingerprint: str) -> pd.DataFrame
 
     query = sqlalchemy.text(
         """
-        SELECT run_timestamp, file_name, quality_score,
+        SELECT run_timestamp, file_name, quality_score, row_count, column_count,
                anomalies_found, critical_violations,
                schema_drift_detected
         FROM pipeline_runs
