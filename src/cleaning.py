@@ -4,6 +4,7 @@ import pandas as pd
 
 from src.paths import resolve_path
 
+
 def standardize_data(df: pd.DataFrame) -> pd.DataFrame:
     """Duplicates hatao, text trim karo, City/Name ka format ek jaisa karo."""
     df = df.copy()
@@ -13,7 +14,16 @@ def standardize_data(df: pd.DataFrame) -> pd.DataFrame:
         if col.lower() in ("city", "name"):
             df[col] = df[col].str.title()
     return df.drop_duplicates().reset_index(drop=True)
-    
+
+
+def _null_mask(series: pd.Series, treat_empty_as_null: bool) -> pd.Series:
+    mask = series.isnull()
+    if treat_empty_as_null:
+        as_str = series.astype(str).str.strip()
+        mask = mask | as_str.isin(["", "nan", "None", "NaN"])
+    return mask
+
+
 def fill_missing_values(df: pd.DataFrame, text_fill: str = "Unknown") -> pd.DataFrame:
     """Null/empty values ko replace karo: numbers -> median, text -> 'Unknown'."""
     df = df.copy()
@@ -40,14 +50,6 @@ def fill_missing_values(df: pd.DataFrame, text_fill: str = "Unknown") -> pd.Data
         else:
             df[col] = df[col].where(~mask, text_fill)
     return df
-
-
-def _null_mask(series: pd.Series, treat_empty_as_null: bool) -> pd.Series:
-    mask = series.isnull()
-    if treat_empty_as_null:
-        as_str = series.astype(str).str.strip()
-        mask = mask | as_str.isin(["", "nan", "None", "NaN"])
-    return mask
 
 
 def get_optional_columns(df: pd.DataFrame, config: dict) -> set[str]:
