@@ -72,6 +72,9 @@ def _login() -> None:
         _error(st.session_state["auth_error"])
     if st.session_state.pop("signup_success", None):
         st.success("Account created successfully! Sign in with your credentials now.")
+        _mail_warn = st.session_state.pop("welcome_email_warning", "")
+        if _mail_warn:
+            st.warning(f"Welcome email could not be sent: {_mail_warn}")
         st.markdown(
             '<div style="margin:-4px 0 14px 0;padding:10px 14px;background:var(--ui-accent-soft);'
             'border:1px solid var(--ui-primary-border);border-radius:10px;text-align:center;">'
