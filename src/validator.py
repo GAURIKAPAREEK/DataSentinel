@@ -1,60 +1,167 @@
+import os
+
 import pandas as pd
-import logging
-from datetime import datetime
 
-from src.cleaning import expand_validation_rules, _null_mask
+from src.paths import resolve_path
 
 
-def apply_validation_rules(df: pd.DataFrame, config: dict) -> tuple:
-    """
-    Config mein defined rules ko data pe apply karta hai.
-    Har row ke liye check karta hai ki koi rule violate to nahi ho rahi.
+def standardize_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Duplicates hatao, text trim karo, City/Name ka format ek jaisa karo."""
+    df = df.copy()
+    for col in df.select_dtypes(include=["object", "string"]).columns:
+        df[col] = df[col].str.strip()
+    for col in df.columns:
+        if col.lower() in ("city", "name"):
+            df[col] = df[col].str.title()
+    return df.drop_duplicates().reset_index(drop=True)
 
-    Returns: (violations_list, validation_summary)
-    """
-    rules = expand_validation_rules(df, config)
-    violations = []
-    treat_empty = config.get("cleaning", {}).get("treat_empty_as_null", True)
 
-    for rule in rules:
-        col = rule["column"]
+def _null_mask(series: pd.Series, treat_empty_as_null: bool) -> pd.Series:
+    mask = series.isnull()
+    if treat_empty_as_null:
+        as_str = series.astype(str).str.strip()
+        mask = mask | as_str.isin(["", "nan", "None", "NaN"])
+    return mask
 
-        if col not in df.columns:
+
+def fill_missing_values(df: pd.DataFrame, text_fill: str = "Unknown") -> pd.DataFrame:
+    """Null/empty values ko replace karo: numbers -> median, text -> 'Unknown'."""
+    df = df.copy()
+    for col in df.columns:
+        mask = _null_mask(df[col], True)
+        if not mask.any():
             continue
-
-        condition = rule["condition"]
-        threshold = rule["value"]
-
-        if condition == "less_than":
-            failing_rows = df[pd.to_numeric(df[col], errors="coerce") < threshold]
-        elif condition == "greater_than":
-            failing_rows = df[pd.to_numeric(df[col], errors="coerce") > threshold]
-        elif condition == "is_null":
-            failing_rows = df[df[col].isnull()]
-        elif condition == "is_null_or_empty":
-            failing_rows = df[_null_mask(df[col], treat_empty)]
+        numeric = pd.to_numeric(df[col].where(~mask), errors="coerce")
+        if numeric.notna().sum() > 0 and numeric.notna().sum() == (~mask).sum():
+            # numeric column: median se bharo
+            fill = numeric.median()
+            if (numeric.dropna() % 1 == 0).all():
+                fill = round(fill)
+                numeric = numeric.fillna(fill).astype("int64")
+            else:
+                numeric = numeric.fillna(fill)
+            df[col] = numeric
+        elif numeric.notna().sum() == 0 and (~mask).sum() > 0:
+            # text column
+            df[col] = df[col].where(~mask, text_fill)
+        elif (~mask).sum() == 0:
+            # poora column khali hai
+            df[col] = text_fill
         else:
+            df[col] = df[col].where(~mask, text_fill)
+    return df
+
+
+def get_optional_columns(df: pd.DataFrame, config: dict) -> set[str]:
+    cleaning = config.get("cleaning", {})
+    optional = set(cleaning.get("optional_column_names", []))
+    optional_suffixes = cleaning.get("optional_suffixes", [])
+
+    for col in df.columns:
+        col_lower = col.lower()
+        if any(col_lower.endswith(suffix.lower()) for suffix in optional_suffixes):
+            optional.add(col)
+    return optional
+
+
+def get_required_columns(df: pd.DataFrame, config: dict) -> list[str]:
+    cleaning = config.get("cleaning", {})
+    explicit = cleaning.get("required_column_names", [])
+    suffixes = cleaning.get("required_suffixes", ["_id"])
+    optional = get_optional_columns(df, config)
+    required = set()
+
+    explicit_lower = {name.lower() for name in explicit}
+    for col in df.columns:
+        if col in optional:
             continue
+        col_lower = col.lower()
+        if col_lower in explicit_lower:
+            required.add(col)
+            continue
+        if any(col_lower.endswith(suffix.lower()) for suffix in suffixes):
+            required.add(col)
 
-        for idx in failing_rows.index:
-            violations.append({
-                "row_index": idx,
-                "rule_name": rule["name"],
-                "column": col,
-                "severity": rule["severity"],
-                "actual_value": df.loc[idx, col],
-                "detected_at": str(datetime.now())
-            })
+    return sorted(required)
 
-    # Summary banao
-    summary = {
-        "total_rows_checked": len(df),
-        "total_violations": len(violations),
-        "critical_violations": len([v for v in violations if v["severity"] == "CRITICAL"]),
-        "warning_violations": len([v for v in violations if v["severity"] == "WARNING"])
+
+def expand_validation_rules(df: pd.DataFrame, config: dict) -> list[dict]:
+    """Static rules + dataset-aware null rules so clean output is actually clean."""
+    rules = list(config.get("validation_rules", []))
+    cleaning = config.get("cleaning", {})
+    mode = cleaning.get("mode", "strict")
+    treat_empty = cleaning.get("treat_empty_as_null", True)
+    condition = "is_null_or_empty" if treat_empty else "is_null"
+
+    covered_nulls = {
+        rule["column"]
+        for rule in rules
+        if "column" in rule and rule.get("condition") in ("is_null", "is_null_or_empty")
     }
 
-    logging.info(f"Validation complete: {summary['total_violations']} violations found "
-                 f"({summary['critical_violations']} critical, {summary['warning_violations']} warning)")
+    if mode == "strict":
+        target_columns = list(df.columns)
+    elif mode == "required_only":
+        target_columns = get_required_columns(df, config)
+    else:
+        return rules
 
-    return violations, summary
+    for col in target_columns:
+        if col in covered_nulls:
+            continue
+        rules.append(
+            {
+                "name": f"missing_{col}",
+                "column": col,
+                "condition": condition,
+                "value": None,
+                "severity": "CRITICAL",
+            }
+        )
+        covered_nulls.add(col)
+
+    return rules
+
+
+def count_null_cells(df: pd.DataFrame, config: dict, required_only: bool = False) -> int:
+    treat_empty = config.get("cleaning", {}).get("treat_empty_as_null", True)
+    optional = get_optional_columns(df, config) if required_only else set()
+    columns = [col for col in df.columns if col not in optional]
+    total = 0
+    for col in columns:
+        total += int(_null_mask(df[col], treat_empty).sum())
+    return total
+
+
+def verify_clean_data(clean_df: pd.DataFrame, config: dict) -> dict:
+    treat_empty = config.get("cleaning", {}).get("treat_empty_as_null", True)
+    if clean_df.empty:
+        return {"rows": 0, "null_rows": 0, "null_cells": 0, "is_fully_clean": True}
+
+    optional = get_optional_columns(clean_df, config)
+    check_columns = [col for col in clean_df.columns if col not in optional]
+    if not check_columns:
+        check_columns = list(clean_df.columns)
+
+    null_mask = pd.DataFrame(
+        {col: _null_mask(clean_df[col], treat_empty) for col in check_columns}
+    )
+    null_rows = int(null_mask.any(axis=1).sum())
+    null_cells = int(null_mask.sum().sum())
+    return {
+        "rows": len(clean_df),
+        "null_rows": null_rows,
+        "null_cells": null_cells,
+        "is_fully_clean": null_cells == 0,
+    }
+
+
+def save_clean_data(clean_df: pd.DataFrame, config: dict, source_filename: str) -> str | None:
+    if clean_df.empty:
+        return None
+
+    cleaned_path = resolve_path(config["output"]["cleaned_path"])
+    os.makedirs(cleaned_path, exist_ok=True)
+    output_file = os.path.join(cleaned_path, f"clean_{source_filename}")
+    clean_df.to_csv(output_file, index=False)
+    return output_file
