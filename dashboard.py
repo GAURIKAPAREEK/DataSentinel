@@ -12,7 +12,7 @@ _FAVICON = os.path.join(os.path.dirname(__file__), "assets", "brand", "favicon.p
 from src.anomaly_detector import detect_statistical_anomalies
 from src.auth import get_authenticator
 from src.azure_sql import save_pipeline_run
-from src.cleaning import count_null_cells, save_clean_data, verify_clean_data
+from src.cleaning import count_null_cells, fill_missing_values, save_clean_data, standardize_data, verify_clean_data
 from src.ui.chart import render_quality_trend_charts
 from src.ingestion import load_config, load_file
 from src.paths import resolve_path
@@ -111,6 +111,7 @@ def _run_pipeline(uploaded_file):
             profile = profile_dataframe(df, config)
             violations, summary = apply_validation_rules(df, config)
             clean_df, quarantined_df = quarantine_bad_rows(df, violations, config)
+            clean_df = fill_missing_values(clean_df)  
             row_pass_rate = (len(clean_df) / len(df) * 100.0) if len(df) > 0 else 100.0
             profile["overall_quality_score"] = round(min(profile["overall_quality_score"], row_pass_rate), 1)
             clean_report = verify_clean_data(clean_df, config)
