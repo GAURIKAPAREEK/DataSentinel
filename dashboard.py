@@ -2,7 +2,6 @@ import os
 import sys
 
 import pandas as pd
-from src.cleaning import count_null_cells, save_clean_data, standardize_data, verify_clean_data
 import streamlit as st
 
 sys.path.append(os.path.dirname(__file__))
@@ -11,7 +10,7 @@ _FAVICON = os.path.join(os.path.dirname(__file__), "assets", "brand", "favicon.p
 
 from src.anomaly_detector import detect_statistical_anomalies
 from src.auth import get_authenticator
-from src.azure_sql import save_pipeline_run
+from src.azure_sql import fetch_login_history, save_login_event, save_pipeline_run
 from src.cleaning import count_null_cells, fill_missing_values, save_clean_data, standardize_data, verify_clean_data
 from src.ui.chart import render_quality_trend_charts
 from src.ingestion import load_config, load_file
@@ -93,6 +92,15 @@ if not st.session_state.get("_workspace_hydrated"):
     st.rerun()
 
 config = load_config("config/pipeline_config.yaml")
+
+# Har naye login/session par is account ke naam se ek entry save hogi
+if current_user and not st.session_state.get("_login_logged"):
+    try:
+        save_login_event(config, current_user)
+    except Exception:
+        pass
+    st.session_state["_login_logged"] = True
+
 trend_df = get_quality_trend(config, current_user)
 has_history = not trend_df.empty
 
@@ -107,11 +115,11 @@ def _run_pipeline(uploaded_file):
     try:
         with st.spinner("Running validation pipeline…"):
             df, metadata = load_file(temp_path)
-            df = standardize_data(df) 
+            df = standardize_data(df)
             profile = profile_dataframe(df, config)
             violations, summary = apply_validation_rules(df, config)
             clean_df, quarantined_df = quarantine_bad_rows(df, violations, config)
-            clean_df = fill_missing_values(clean_df)  
+            clean_df = fill_missing_values(clean_df)
             row_pass_rate = (len(clean_df) / len(df) * 100.0) if len(df) > 0 else 100.0
             profile["overall_quality_score"] = round(min(profile["overall_quality_score"], row_pass_rate), 1)
             clean_report = verify_clean_data(clean_df, config)
@@ -125,15 +133,18 @@ def _run_pipeline(uploaded_file):
             save_schema_snapshot(
                 list(df.columns), df_dtypes, config, uploaded_file.name, current_user
             )
-            save_pipeline_run(
-                metadata=metadata,
-                profile=profile,
-                validation_summary=summary,
-                anomalies=anomalies,
-                drift_result=drift_result,
-                config=config,
-                username=current_user,
-            )
+            run_key = f"{current_user}:{uploaded_file.name}:{uploaded_file.size}"
+            if st.session_state.get("_last_saved_run") != run_key:
+                save_pipeline_run(
+                    metadata=metadata,
+                    profile=profile,
+                    validation_summary=summary,
+                    anomalies=anomalies,
+                    drift_result=drift_result,
+                    config=config,
+                    username=current_user,
+                )
+                st.session_state["_last_saved_run"] = run_key
     except Exception as exc:
         st.error(f"Pipeline failed: {exc}")
         return
@@ -214,6 +225,7 @@ def render_dashboard_page() -> None:
 
     # How it works is only shown when idle
     if uploaded_file is None:
+        st.session_state.pop("_last_saved_run", None)
         how_it_works()
 
     # Metrics grid
@@ -240,10 +252,27 @@ def render_dashboard_page() -> None:
         _run_pipeline(uploaded_file)
 
 
+def _render_login_activity(table: bool = False) -> None:
+    try:
+        logins = fetch_login_history(config, current_user)
+        if table:
+            section("Login history", "Is account me kitni baar login hua")
+            themed_table(logins, max_rows=100)
+        else:
+            section("Login activity", "Is account ke saare logins")
+            stat_grid([
+                ("Total logins", len(logins), "All time"),
+                ("Last login", str(logins["login_timestamp"].iloc[0])[:16] if not logins.empty else "—", "Most recent"),
+            ])
+    except Exception as exc:
+        st.warning(f"Could not load login history: {exc}")
+
+
 def render_analytics_page() -> None:
     page_intro("Analytics", "Quality trends across previous datasets and runs.")
     if not has_history:
         empty_state("No analytics yet", "Upload a dataset from Dashboard to build your first trend charts.")
+        _render_login_activity()
         return
 
     try:
@@ -258,11 +287,14 @@ def render_analytics_page() -> None:
     except Exception as exc:
         st.warning(f"Could not load analytics: {exc}")
 
+    _render_login_activity()
+
 
 def render_history_page() -> None:
     page_intro("History", "Full pipeline run history for your workspace.")
     if not has_history:
         empty_state("No history yet", "Runs will appear here after you upload and validate a dataset.")
+        _render_login_activity(table=True)
         return
 
     selected = st.selectbox(
@@ -273,6 +305,12 @@ def render_history_page() -> None:
     history_df = trend_df if selected == "All datasets" else trend_df[trend_df["file_name"] == selected]
     display = history_df.sort_values("run_timestamp", ascending=False).copy()
     themed_table(display, max_rows=100)
+
+    try:
+        section("Login history", "Is account me kitni baar login hua")
+        themed_table(fetch_login_history(config, current_user), max_rows=100)
+    except Exception as exc:
+        st.warning(f"Could not load login history: {exc}")
 
 
 if app_page == "analytics":
