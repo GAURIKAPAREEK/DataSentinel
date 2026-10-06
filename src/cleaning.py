@@ -13,6 +13,33 @@ def standardize_data(df: pd.DataFrame) -> pd.DataFrame:
         if col.lower() in ("city", "name"):
             df[col] = df[col].str.title()
     return df.drop_duplicates().reset_index(drop=True)
+    
+def fill_missing_values(df: pd.DataFrame, text_fill: str = "Unknown") -> pd.DataFrame:
+    """Null/empty values ko replace karo: numbers -> median, text -> 'Unknown'."""
+    df = df.copy()
+    for col in df.columns:
+        mask = _null_mask(df[col], True)
+        if not mask.any():
+            continue
+        numeric = pd.to_numeric(df[col].where(~mask), errors="coerce")
+        if numeric.notna().sum() > 0 and numeric.notna().sum() == (~mask).sum():
+            # numeric column: median se bharo
+            fill = numeric.median()
+            if (numeric.dropna() % 1 == 0).all():
+                fill = round(fill)
+                numeric = numeric.fillna(fill).astype("int64")
+            else:
+                numeric = numeric.fillna(fill)
+            df[col] = numeric
+        elif numeric.notna().sum() == 0 and (~mask).sum() > 0:
+            # text column
+            df[col] = df[col].where(~mask, text_fill)
+        elif (~mask).sum() == 0:
+            # poora column khali hai
+            df[col] = text_fill
+        else:
+            df[col] = df[col].where(~mask, text_fill)
+    return df
 
 
 def _null_mask(series: pd.Series, treat_empty_as_null: bool) -> pd.Series:
