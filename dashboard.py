@@ -230,14 +230,14 @@ def render_dashboard_page() -> None:
         stat_grid([
             ("Total uploads", len(trend_df), "Is account ki saari uploads"),
             ("Avg quality", f"{trend_df['quality_score'].mean():.1f}%", "Across all uploads"),
-            ("Unique datasets", trend_df["file_name"].nunique(), "Alag-alag files"),
+            ("Unique datasets", trend_df["file_name"].nunique(), "Alag-ala files"),
             ("Anomalies", int(trend_df["anomalies_found"].sum()), "Detected total"),
         ])
     else:
         stat_grid([
             ("Total uploads", "0", "Upload to begin"),
             ("Avg quality", "—", "No data yet"),
-            ("Unique datasets", "0", "Alag-alag files"),
+            ("Unique datasets", "0", "Distinct files"),
             ("Anomalies", "0", "Detected"),
         ])
 
