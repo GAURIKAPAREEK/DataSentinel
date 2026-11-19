@@ -228,7 +228,7 @@ def render_dashboard_page() -> None:
     # Metrics grid
     if has_history:
         stat_grid([
-            ("Total uploads", len(trend_df), "Is account ki saari uploads"),
+            ("Total uploads", len(trend_df), "Total uploads"),
             ("Avg quality", f"{trend_df['quality_score'].mean():.1f}%", "Across all uploads"),
             ("Unique datasets", trend_df["file_name"].nunique(), " Distinct files"),
             ("Anomalies", int(trend_df["anomalies_found"].sum()), "Detected total"),
